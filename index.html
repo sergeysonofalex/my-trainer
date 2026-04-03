@@ -3,405 +3,873 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Тренажер урока цифровая грамотность</title>
+<title>Компьютерная грамота — 2 класс</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+:root{
+  --bg:#eef4ff; --card:#fff; --primary:#2563eb; --plight:#dbeafe;
+  --green:#16a34a; --glight:#dcfce7; --red:#dc2626; --rlight:#fee2e2;
+  --orange:#ea580c; --yellow:#ca8a04; --ylight:#fef9c3;
+  --text:#1e293b; --muted:#64748b; --border:#cbd5e1;
+  --radius:18px; --shadow:0 4px 24px rgba(37,99,235,.10);
+  /* Блоки — разные пастельные тона */
+  --hint-bg:#eff6ff;   --hint-brd:#bfdbfe;   /* голубой  — памятка */
+  --warn-bg:#fffbeb;   --warn-brd:#fbbf24;   /* жёлтый   — предупреждение */
+  --task-bg:#f0fdf4;   --task-brd:#86efac;   /* зелёный  — задание */
+  --tip-bg:#fdf4ff;    --tip-brd:#d8b4fe;    /* фиолетовый — подсказка/совет */
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);padding:20px 16px 50px;font-size:18px;}
 
-:root {
-  --bg: #f0f7ff;
-  --card: #ffffff;
-  --primary: #0284c7;
-  --primary-light: #e0f2fe;
-  --green: #15803d;
-  --red: #b91c1c;
-  --text: #1e293b;
-  --muted: #64748b;
-  --border: #cbd5e1;
-  --hint-bg: #fffceb;
-  --hint-border: #facc15;
-  --radius: 24px;
-  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+/* ── HEADER ── */
+.hdr{text-align:center;margin-bottom:20px;}
+.hdr h1{font-size:2.1rem;font-weight:900;color:var(--primary);}
+.hdr p{font-size:1.05rem;color:var(--muted);margin-top:4px;}
+
+/* ── CAPSLOCK BANNER ── */
+#caps-banner{
+  max-width:680px;margin:0 auto 14px;
+  background:#fff7ed;border:2px solid #f97316;border-radius:14px;
+  padding:12px 18px;font-size:1.05rem;font-weight:700;color:#7c2d12;
+  display:none;align-items:center;gap:10px;line-height:1.6;
+}
+#caps-banner.show{display:flex;}
+#caps-banner .cb-ico{font-size:1.6rem;flex-shrink:0;}
+
+/* ── PROGRESS ── */
+.prog-wrap{
+  max-width:680px;margin:0 auto 20px;background:var(--card);
+  border-radius:50px;padding:10px 20px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:14px;
+}
+.prog-lbl{font-size:1rem;font-weight:700;color:var(--muted);white-space:nowrap;}
+.prog-bg{flex:1;height:12px;background:var(--border);border-radius:50px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--primary),#7c3aed);border-radius:50px;transition:width .5s;width:0%;}
+.score-badge{background:var(--plight);color:var(--primary);font-weight:800;font-size:1rem;padding:4px 14px;border-radius:50px;white-space:nowrap;}
+
+/* ── CARD WRAPPER ── */
+.card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:24px 26px 22px;max-width:680px;margin:0 auto 18px;
+  border:3px solid transparent;transition:border-color .3s;
+}
+.card.ok{border-color:var(--green);}
+.card.bad{border-color:var(--red);}
+
+.task-badge{
+  display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,var(--primary),#7c3aed);
+  color:#fff;
+  font-weight:900;font-size:1.6rem;
+  padding:14px 24px;border-radius:16px;margin-bottom:20px;
+  box-shadow:0 4px 16px rgba(37,99,235,.25);
+  letter-spacing:0.3px;
+}
+.task-badge span{font-size:2rem;}
+
+/* ── SECTION BLOCKS ── */
+/* 💙 Памятка — голубой */
+.sec-hint{
+  background:#eff8ff;border:2px solid #93c5fd;border-radius:14px;
+  padding:16px 20px;margin-bottom:14px;font-size:1.05rem;line-height:1.8;
+  position:relative;
+}
+.sec-hint::before{content:'📘 Памятка';display:block;font-weight:900;
+  font-size:0.85rem;color:#1d4ed8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.sec-hint b,.sec-hint strong{color:#1d4ed8;}
+
+/* ⚠️ Предупреждение — жёлтый */
+.sec-warn{
+  background:#fffbeb;border:2px solid #fbbf24;border-radius:14px;
+  padding:14px 18px;margin-bottom:14px;font-size:1.05rem;line-height:1.8;
+}
+.sec-warn::before{content:'⚠️ Важно!';display:block;font-weight:900;
+  font-size:0.85rem;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sec-warn b{color:#92400e;}
+
+/* 💚 Блок выполнения — нежно-зелёный */
+.sec-task{
+  background:#f0fdf4;border:2px solid #86efac;border-radius:14px;
+  padding:18px 22px;margin-bottom:14px;position:relative;
+}
+.sec-task::before{content:'✏️ Выполни задание';display:block;font-weight:900;
+  font-size:0.85rem;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+
+.sec-input-wrap{
+  position:relative;margin-bottom:16px;
+}
+.arrow-label{
+  position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:flex-end;
+  pointer-events:none;
+}
+/* ── INPUT ARROW ── */
+.input-row{position:relative;display:flex;align-items:center;gap:0;}
+.input-arrow{
+  display:flex;flex-direction:column;align-items:center;
+  margin-right:10px;flex-shrink:0;
+}
+.input-arrow .arr-txt{
+  font-size:0.85rem;font-weight:800;color:var(--primary);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  transform:rotate(180deg);margin-bottom:4px;letter-spacing:1px;
+}
+.input-arrow .arr-ico{font-size:1.6rem;line-height:1;}
+
+.sec-feedback{
+  margin-top:14px;padding:18px 22px;border-radius:14px;
+  font-size:1.15rem;font-weight:700;display:none;
+  align-items:flex-start;gap:14px;line-height:1.6;
+  border:2px solid transparent;
+}
+.sec-feedback.show{display:flex;}
+.sec-feedback.ok{background:#f0fdf4;color:#14532d;border-color:#86efac;}
+.sec-feedback.ok::before{content:'✅ Результат';display:none;}
+.sec-feedback.bad{background:#fff7f7;color:#7f1d1d;border-color:#fca5a5;}
+.sec-feedback .emo{font-size:2.4rem;flex-shrink:0;margin-top:2px;}
+
+/* ── INSTRUCTION ── */
+.instruction{font-size:1.65rem;font-weight:900;color:var(--text);line-height:1.5;margin-bottom:14px;}
+.instruction .target{color:var(--primary);}
+
+/* ── KEY CHIP ── */
+.kc{
+  display:inline-block;background:#fff;border:2px solid #94a3b8;
+  border-bottom:4px solid #64748b;border-radius:7px;
+  padding:2px 10px;font-weight:800;font-size:0.9rem;
+  color:var(--text);margin:0 3px;vertical-align:middle;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── MOUSE ILLUSTRATION ── */
+.mouse-row{display:flex;align-items:center;gap:14px;margin-top:10px;}
+.mouse-body{
+  width:52px;height:80px;background:#e2e8f0;border-radius:26px 26px 16px 16px;
+  border:2px solid #94a3b8;display:flex;flex-direction:column;
+  overflow:hidden;position:relative;flex-shrink:0;
+}
+.mouse-top{display:flex;height:38px;border-bottom:2px solid #94a3b8;}
+.mouse-l{flex:1;border-right:1px solid #94a3b8;border-radius:24px 0 0 0;transition:background .2s;}
+.mouse-r{flex:1;border-radius:0 24px 0 0;transition:background .2s;}
+.mouse-l.lit{background:var(--primary);}
+.mouse-wheel{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:7px;height:15px;background:#94a3b8;border-radius:4px;}
+.mouse-bot{flex:1;}
 
-body {
-  font-family: 'Nunito', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 15px;
+/* ── SELECTION SENTENCE ── */
+.sentence-area{
+  font-size:2rem;font-weight:800;line-height:2.4;
+  user-select:none;cursor:default;padding:4px 2px;
+}
+.wt{
+  display:inline;cursor:text;border-radius:2px;
+  transition:background .04s,color .04s;
+}
+.wt.hl{background:#2563eb;color:#fff;border-radius:2px;}
+.wt-ch{display:inline;border-radius:1px;}
+.wt-ch.hl{background:#2563eb;color:#fff;}
+.wt-sp{display:inline;}
+.wt-sp.hl{background:#2563eb;color:#fff;}
+
+/* ── CORRECTION EDITOR ── */
+.corr-correct{font-size:1.1rem;color:var(--muted);margin-bottom:10px;}
+.corr-correct strong{font-size:1.55rem;color:var(--green);letter-spacing:3px;}
+.editable-word{
+  display:inline-flex;align-items:center;flex-wrap:wrap;
+  font-size:2.4rem;font-weight:800;background:var(--bg);
+  border:2px solid var(--border);border-radius:14px;
+  padding:12px 22px;min-width:220px;cursor:text;
+  letter-spacing:4px;margin-bottom:14px;
+  user-select:none;outline:none;transition:border-color .2s;
+}
+.editable-word.focused{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+.ch{display:inline;}
+.caret{
+  display:inline-block;width:3px;height:2.2rem;
+  background:var(--primary);border-radius:2px;
+  animation:blink 1s step-end infinite;vertical-align:middle;margin:0 1px;
+}
+@keyframes blink{50%{opacity:0;}}
+
+.key-buttons{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.key-btn{
+  background:#fff;border:2px solid var(--border);border-bottom:5px solid #94a3b8;
+  border-radius:12px;padding:9px 20px;
+  font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;
+  cursor:pointer;transition:transform .1s,border-bottom-width .1s;color:var(--text);
+}
+.key-btn:active,.key-btn.pressed{transform:translateY(3px);border-bottom-width:2px;}
+.key-btn.bs{color:var(--red);border-color:#fca5a5;border-bottom-color:var(--red);}
+.key-btn.dl{color:var(--orange);border-color:#fdba74;border-bottom-color:var(--orange);}
+
+/* ── TYPING INPUT ── */
+.typing-input{
+  flex:1;font-family:'Nunito',sans-serif;
+  font-size:1.9rem;font-weight:800;
+  padding:13px 18px;border:2px solid var(--border);
+  border-radius:14px;outline:none;background:var(--bg);
+  color:var(--text);transition:border-color .2s;letter-spacing:2px;
+  min-width:0;
+}
+.typing-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+.typing-hint{
+  font-size:1rem;color:#581c87;background:#fdf4ff;
+  border:1px solid #d8b4fe;
+  border-radius:10px;padding:10px 14px;margin-top:10px;line-height:1.7;
 }
 
-.header { text-align: center; margin-bottom: 20px; }
-.header h1 { font-size: 1.5rem; color: var(--primary); font-weight: 900; line-height: 1.2; }
-
-.progress-wrap {
-  max-width: 650px; margin: 0 auto 20px;
-  background: var(--card); border-radius: 50px;
-  padding: 10px 20px; box-shadow: var(--shadow);
-  display: flex; align-items: center; gap: 15px;
+/* ── CAPS LOCK OVERLAY on input ── */
+.caps-overlay{
+  display:none;position:absolute;inset:0;
+  background:rgba(255,255,255,.85);border-radius:14px;
+  align-items:center;justify-content:center;
+  font-size:1.05rem;font-weight:800;color:#92400e;
+  text-align:center;padding:10px;border:2px solid #f97316;
+  z-index:10;
 }
-.prog-bg { flex: 1; height: 14px; background: #e2e8f0; border-radius: 50px; overflow: hidden; }
-.prog-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #2563eb); width: 0%; transition: width .5s; }
-.score-badge { font-weight: 900; color: #fff; background: #f59e0b; padding: 4px 14px; border-radius: 50px; min-width: 75px; text-align: center; }
+.caps-overlay.show{display:flex;}
+.input-rel{position:relative;}
 
-.card {
-  background: var(--card); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 25px;
-  max-width: 650px; margin: 0 auto 100px;
-  border: 4px solid transparent; transition: 0.3s;
+/* ── BUTTONS ── */
+.check-btn{
+  background:linear-gradient(135deg,var(--primary),#7c3aed);color:#fff;
+  border:none;border-radius:50px;padding:13px 36px;
+  font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 16px rgba(37,99,235,.25);transition:transform .15s,box-shadow .15s;
 }
-.card.ok { border-color: var(--green); }
-.card.bad { border-color: var(--red); }
-
-.hint-box {
-  background: var(--hint-bg); border: 2px solid var(--hint-border);
-  border-radius: 18px; padding: 15px; margin-bottom: 20px;
-  box-shadow: 0 4px 0 #fef08a;
+.check-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.3);}
+.next-btn{
+  background:linear-gradient(135deg,var(--green),#15803d);color:#fff;
+  border:none;border-radius:50px;padding:13px 32px;
+  font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:800;cursor:pointer;
+  margin-top:12px;display:none;
+  box-shadow:0 4px 16px rgba(22,163,74,.25);transition:transform .15s;
 }
-.hint-title { font-weight: 900; color: #854d0e; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-.hint-warning { color: #b91c1c; font-weight: 800; margin-top: 8px; font-size: 0.95rem; display: none; border-top: 1px dashed #facc15; padding-top: 5px; }
+.next-btn.show{display:inline-block;}
+.next-btn:hover{transform:translateY(-2px);}
 
-.instruction { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; text-align: center; color: #334155; }
-.instruction .target { color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 8px; border: 1px solid #bae6fd; }
-
-.sentence-area {
-  font-size: 1.8rem; font-weight: 800;
-  padding: 15px; background: #f8fafc;
-  border-radius: 16px; border: 2px dashed var(--border);
-  display: flex; flex-wrap: wrap; justify-content: center;
-  cursor: default; margin-bottom: 20px; user-select: none;
+/* ── RESULTS ── */
+#results-screen{display:none;max-width:680px;margin:0 auto;text-align:center;}
+.res-card{background:var(--card);border-radius:var(--radius);padding:38px 28px;box-shadow:var(--shadow);}
+.res-emo{font-size:5rem;display:block;margin-bottom:12px;}
+.res-title{font-size:2.2rem;font-weight:900;color:var(--primary);margin-bottom:8px;}
+.res-sub{font-size:1.1rem;color:var(--muted);margin-bottom:22px;}
+.score-circle{
+  width:130px;height:130px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#7c3aed);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 26px;box-shadow:0 8px 28px rgba(37,99,235,.35);
 }
-.char { white-space: pre; border-radius: 4px; border: 1px solid transparent; }
-.char.hl { background: var(--primary); color: white; }
-
-.typing-input {
-  width: 100%; font-size: 1.8rem; padding: 15px;
-  border: 3px solid var(--border); border-radius: 15px;
-  font-family: inherit; font-weight: 800; outline: none;
-  background: #f1f5f9; margin-bottom: 20px; text-align: center;
+.score-circle .big{font-size:3rem;font-weight:900;line-height:1;}
+.score-circle .small{font-size:1rem;opacity:.85;}
+.result-list{text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:7px;}
+.result-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;background:var(--bg);border-radius:12px;font-size:1.05rem;
 }
-.typing-input:focus { border-color: var(--primary); background: #fff; }
-
-.editable-word {
-  font-size: 2.2rem; font-weight: 900; background: #fff;
-  padding: 15px; border-radius: 15px; margin-bottom: 15px;
-  border: 3px solid var(--border); display: flex; justify-content: center;
-  letter-spacing: 2px; cursor: text; outline: none;
+.restart-btn{
+  background:linear-gradient(135deg,var(--primary),#7c3aed);color:#fff;border:none;
+  border-radius:50px;padding:15px 40px;font-family:'Nunito',sans-serif;
+  font-size:1.2rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 16px rgba(37,99,235,.25);transition:transform .15s;
 }
-.ch-span { position: relative; padding: 0 2px; display: inline-block; border-radius: 4px; }
-.ch-span:hover { background: #e0f2fe; }
-.caret { display: inline-block; width: 4px; height: 2.2rem; background: var(--primary); animation: blink 1s infinite; vertical-align: middle; }
-@keyframes blink { 50% { opacity: 0; } }
+.restart-btn:hover{transform:translateY(-2px);}
 
-.btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-.key-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; background: #f1f5f9; border-bottom: 4px solid #cbd5e1; font-weight: 800; cursor: pointer; color: #475569; font-size: 0.9rem; }
-
-.check-btn { width: 100%; padding: 18px; border: none; border-radius: 50px; background: var(--primary); color: white; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #0369a1; }
-.next-btn { width: 100%; padding: 18px; border: none; border-radius: 50px; background: var(--green); color: white; font-size: 1.2rem; font-weight: 900; cursor: pointer; display: none; margin-top: 15px; box-shadow: 0 4px 0 #14532d; }
-
-.feedback { padding: 15px; border-radius: 15px; margin-top: 15px; display: none; font-weight: 800; text-align: center; }
-.feedback.ok { display: block; background: #dcfce7; color: #166534; }
-.feedback.err { display: block; background: #fee2e2; color: #991b1b; }
-
-#results-screen { display: none; text-align: center; max-width: 600px; margin: 0 auto; }
-.key-name { color: #0284c7; font-weight: 900; }
+.divider{height:1px;background:linear-gradient(90deg,transparent,#c7d2e8 30%,#c7d2e8 70%,transparent);margin:14px 0;}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🚀 Тренажер урока «Цифровая грамотность» 🇰🇿</h1>
+<div class="hdr">
+  <h1>🖥️ Компьютерная грамота</h1>
+  <p>Интерактивные упражнения — 2 класс</p>
 </div>
 
-<div class="progress-wrap" id="prog-wrap">
-  <div class="score-badge" id="score-badge">⭐ 0</div>
+<!-- CAPSLOCK GLOBAL BANNER -->
+<div id="caps-banner">
+  <span class="cb-ico">🔴</span>
+  <span>Клавиша <b>Caps Lock (Капс Лок)</b> включена! Нажми её один раз, чтобы выключить — иначе буквы будут неправильными.</span>
+</div>
+
+<div class="prog-wrap" id="prog-wrap">
+  <span class="prog-lbl" id="prog-lbl">Задание 1 из 30</span>
   <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
-  <div style="font-weight:900; color:var(--muted); font-size: 0.9rem; min-width: 50px; text-align: right;" id="prog-label">1 / 30</div>
+  <div class="score-badge" id="score-badge">⭐ 0 / 10</div>
 </div>
 
 <div id="task-container"></div>
 
 <div id="results-screen">
-  <div class="card">
-    <h2 style="font-size:2.5rem">Занятие окончено! 🏆</h2>
-    <p style="margin: 20px 0; font-size: 1.3rem;">Ты настоящий <b>Адал Азамат</b>!</p>
-    <div style="font-size:3.5rem; font-weight:900; color:var(--primary); margin-bottom:20px" id="res-score"></div>
-    <button class="check-btn" onclick="location.reload()">🔄 Начать сначала</button>
+  <div class="res-card">
+    <span class="res-emo" id="res-emoji">🏆</span>
+    <div class="res-title" id="res-title">Молодец!</div>
+    <div class="res-sub" id="res-sub"></div>
+    <div class="score-circle">
+      <span class="big" id="res-score">0</span>
+      <span class="small">из 10</span>
+    </div>
+    <div class="result-list" id="res-list"></div>
+    <button class="restart-btn" onclick="restart()">🔄 Начать заново</button>
   </div>
 </div>
 
 <script>
-// --- ПУЛ ЗАДАНИЙ (30 ШТУК) ---
-const SEL_DATA = [
-  { s: "Астана — столица.", t: "Астана" },
-  { s: "Я люблю Родину.", t: "Родину" },
-  { s: "Честный ученик.", t: "Честный" },
-  { s: "Мышка на коврике.", t: "Мышка" },
-  { s: "Экран монитора.", t: "Экран" },
-  { s: "Верный товарищ.", t: "Верный" }
+// ══════════════════════════════════════════════════════
+//  ДАННЫЕ — 30 ЗАДАНИЙ
+// ══════════════════════════════════════════════════════
+const ALL_TASKS = [
+  // SELECTION (12 шт) — target всегда строчными, сравнение без учёта регистра
+  {kind:'sel', sentence:'Мой класс учится хорошо',      target:'класс'},
+  {kind:'sel', sentence:'Я люблю читать книги',          target:'книги'},
+  {kind:'sel', sentence:'На диване спит кошка',          target:'кошка'},
+  {kind:'sel', sentence:'Синее небо красивое',           target:'небо'},
+  {kind:'sel', sentence:'Мама готовит обед дома',        target:'обед'},
+  {kind:'sel', sentence:'На улице белый снег',           target:'снег'},
+  {kind:'sel', sentence:'По двору бегает собака',        target:'собака'},
+  {kind:'sel', sentence:'Дети играют в саду',            target:'дети'},
+  {kind:'sel', sentence:'Солнце светит ярко сегодня',    target:'ярко'},
+  {kind:'sel', sentence:'Над рекой летит птица',         target:'птица'},
+  {kind:'sel', sentence:'Учитель читает книгу вслух',    target:'читает'},
+  {kind:'sel', sentence:'У забора лежит мяч',            target:'мяч'},
+  // CORRECTION (8 шт)
+  {kind:'corr', wrong:'клаасс',   correct:'класс'},
+  {kind:'corr', wrong:'шкоола',   correct:'школа'},
+  {kind:'corr', wrong:'учетель',  correct:'учитель'},
+  {kind:'corr', wrong:'дневнек',  correct:'дневник'},
+  {kind:'corr', wrong:'тетраадь', correct:'тетрадь'},
+  {kind:'corr', wrong:'каарандаш',correct:'карандаш'},
+  {kind:'corr', wrong:'девачка',  correct:'девочка'},
+  {kind:'corr', wrong:'малако',   correct:'молоко'},
+  // SHIFT (4 шт)
+  {kind:'shift', lower:'арбуз',   upper:'Арбуз'},
+  {kind:'shift', lower:'школа',   upper:'Школа'},
+  {kind:'shift', lower:'москва',  upper:'Москва'},
+  {kind:'shift', lower:'учитель', upper:'Учитель'},
+  // PUNCT (3 шт)
+  {kind:'punct', before:'Природа', after:'птицы',  expected:'Природа, птицы.'},
+  {kind:'punct', before:'Лето',    after:'солнце', expected:'Лето, солнце.'},
+  {kind:'punct', before:'Кошка',   after:'собака', expected:'Кошка, собака.'},
+  // CAPS (3 шт)
+  {kind:'caps', word:'ПРИРОДА'},
+  {kind:'caps', word:'ЗЕМЛЯ'},
+  {kind:'caps', word:'КАЗАХСТАН'},
 ];
-const CORR_DATA = [
-  { w: "компютер", c: "компьютер" },
-  { w: "казакстан", c: "Казахстан" },
-  { w: "програма", c: "программа" },
-  { w: "ошипка", c: "ошибка" },
-  { w: "интирнет", c: "интернет" },
-  { w: "клавитура", c: "клавиатура" }
-];
-const SHIFT_DATA = [
-  { l: "абай", u: "Абай" },
-  { l: "алматы", u: "Алматы" },
-  { l: "каспий", u: "Каспий" },
-  { l: "тенге", u: "Тенге" },
-  { l: "степь", u: "Степь" },
-  { l: "батыр", u: "Батыр" }
-];
-const PUNCT_DATA = [
-  { exp: "Семья, труд." },
-  { exp: "Урок, класс." },
-  { exp: "Файл, папка." },
-  { exp: "Мир, дружба." },
-  { exp: "Правда, честь." },
-  { exp: "Свет, экран." }
-];
-const CAPS_DATA = ["ИНТЕРНЕТ", "КАЗАХСТАН", "ПОРЯДОК", "СПРАВЕДЛИВОСТЬ", "КЛАВИАТУРА", "ПАМЯТЬ"];
 
-let tasks = [], curIdx = 0, score = 0;
-let selDrag = { active: false, start: -1, end: -1 };
-let corrState = { chars: [], pos: 0 };
-let usedShiftForFirstLetter = false;
+// ══════════════════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ══════════════════════════════════════════════════════
+let tasks=[], curIdx=0, score=0, taskResults=[], taskScored=false;
+let cState={chars:[],pos:0};
+let _keyFn=null;
+let selDrag={active:false,startChar:-1,endChar:-1};
+let capsOn=false;   // текущее состояние CapsLock
 
-function initGame() {
-  let pool = [];
-  for(let i=0; i<6; i++) pool.push({ type: 'sel', data: SEL_DATA[i] });
-  for(let i=0; i<6; i++) pool.push({ type: 'corr', data: CORR_DATA[i] });
-  for(let i=0; i<6; i++) pool.push({ type: 'shift', data: SHIFT_DATA[i] });
-  for(let i=0; i<6; i++) pool.push({ type: 'punct', data: PUNCT_DATA[i] });
-  for(let i=0; i<6; i++) pool.push({ type: 'caps', data: CAPS_DATA[i] });
-  tasks = pool.sort(() => Math.random() - 0.5);
-  renderTask();
+// ══════════════════════════════════════════════════════
+//  УТИЛИТЫ
+// ══════════════════════════════════════════════════════
+const rnd = a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
+function normStr(s){
+  return s.trim()
+    .replace(/[\u00A0\u202F\u2009\u200B\uFEFF]/g,' ')
+    .replace(/\s+/g,' ');
+}
+// Сравнение с учётом регистра (строгое)
+function strEq(a,b){ return normStr(a)===normStr(b); }
+
+// ══════════════════════════════════════════════════════
+//  CAPSLOCK МОНИТОРИНГ
+// ══════════════════════════════════════════════════════
+function updateCapsState(e){
+  if(e && e.getModifierState){
+    capsOn = e.getModifierState('CapsLock');
+  }
+  const task = tasks[curIdx];
+  const isCapsTask = task && task.kind === 'caps';
+  // Баннер вверху — скрываем на задании caps (там капслок нужен)
+  const banner=document.getElementById('caps-banner');
+  if(banner) banner.classList.toggle('show', capsOn && !isCapsTask);
+  refreshCapsOverlay();
 }
 
-window.addEventListener('keydown', (e) => {
-  const t = tasks[curIdx];
-  const isCaps = e.getModifierState('CapsLock');
-  const warn = document.getElementById('caps-warn');
-  
-  if (warn) {
-    warn.style.display = (isCaps && t.type !== 'caps') ? 'block' : 'none';
-  }
-
-  // Блокировка Caps Lock для заглавных букв
-  if (t && (t.type === 'shift' || t.type === 'punct')) {
-    const input = document.getElementById('t-in');
-    if (input && input.value.length === 0 && e.key.length === 1) {
-       const isUpper = e.key !== e.key.toLowerCase() && e.key === e.key.toUpperCase();
-       if (isUpper && !e.shiftKey) {
-          e.preventDefault();
-          fail("Стоп! 🛑 Для одной заглавной буквы используй <b>Shift (Шифт)</b>, а не Caps Lock (Капс Лок)!");
-          return;
-       }
-       if (isUpper && e.shiftKey) {
-          usedShiftForFirstLetter = true;
-       }
-    }
-  }
-
-  if (tasks[curIdx] && tasks[curIdx].type === 'corr') {
-    if (e.key === 'Backspace') { e.preventDefault(); doBS(); }
-    else if (e.key === 'Delete') { e.preventDefault(); doDel(); }
-    else if (e.key.length === 1) { e.preventDefault(); doType(e.key); }
-  }
+document.addEventListener('keydown', e=>{
+  updateCapsState(e);
+  if(_keyFn) _keyFn(e);
 });
+document.addEventListener('keyup', updateCapsState);
 
-function renderTask() {
-  const t = tasks[curIdx];
-  const container = document.getElementById('task-container');
-  document.getElementById('prog-label').textContent = `${curIdx + 1} / 30`;
-  document.getElementById('prog-fill').style.width = `${(curIdx / 30) * 100}%`;
-  document.getElementById('score-badge').textContent = `⭐ ${score}`;
-  usedShiftForFirstLetter = false;
-
-  let html = '';
-  
-  if (t.type === 'sel') {
-    html = `
-      <div class="card" id="task-card">
-        <div class="hint-box">
-          <div class="hint-title">🖱️ МЫШКА: ВЫДЕЛЕНИЕ</div>
-          <div>Зажми левую кнопку мыши и веди по буквам. Оно станет синим! 🔵</div>
-        </div>
-        <div class="instruction">Выдели слово <span class="target">«${t.data.t}»</span>:</div>
-        <div class="sentence-area" onmousedown="sStart(event)" onmousemove="sMove(event)" onmouseup="sEnd()" onmouseleave="sEnd()">
-          ${t.data.s.split('').map((c,i)=>`<span class="char" data-idx="${i}">${c}</span>`).join('')}
-        </div>
-        <button class="check-btn" onclick="checkSel()">✅ Проверить ответ</button>
-        <div class="feedback" id="fb"></div>
-        <button class="next-btn" id="next-btn" onclick="next()">Дальше ➡️</button>
-      </div>`;
-  } else if (t.type === 'corr') {
-    corrState = { chars: t.data.w.split(''), pos: t.data.w.length };
-    html = `
-      <div class="card" id="task-card">
-        <div class="hint-box">
-          <div class="hint-title">⌨️ КЛАВИАТУРА: ПРАВКА</div>
-          <div>Нажми мышкой на букву и используй кнопки <span class="key-name">Backspace (Бэкспейс)</span> или <span class="key-name">Delete (Делит)</span>.</div>
-        </div>
-        <div class="instruction">Исправь ошибку (напиши: <b>${t.data.c}</b>):</div>
-        <div class="editable-word" id="ew" tabindex="0" onclick="wordClick(event)">${renderCorr()}</div>
-        <div class="btn-group">
-          <button class="key-btn" onclick="doBS()">⬅ Backspace (Бэкспейс)</button>
-          <button class="key-btn" onclick="doDel()">Delete (Делит) ➡</button>
-        </div>
-        <button class="check-btn" onclick="checkCorr('${t.data.c}')">✅ Проверить ответ</button>
-        <div class="feedback" id="fb"></div>
-        <button class="next-btn" id="next-btn" onclick="next()">Дальше ➡️</button>
-      </div>`;
-  } else if (t.type === 'shift') {
-    html = `
-      <div class="card" id="task-card">
-        <div class="hint-box">
-          <div class="hint-title">⌨️ КЛАВИАТУРА: ЗАГЛАВНАЯ БУКВА</div>
-          <div>Удерживай клавишу <span class="key-name">Shift (Шифт)</span> и нажми букву. 👆</div>
-          <span class="hint-warning" id="caps-warn" style="display:block">⚠️ ВАЖНО: Выключи Caps Lock (Капс Лок)! Для одной буквы он не нужен.</span>
-        </div>
-        <div class="instruction">Напиши с заглавной буквы: <span class="target">«${t.data.u}»</span></div>
-        <input type="text" class="typing-input" id="t-in" autocomplete="off">
-        <button class="check-btn" onclick="checkIn('${t.data.u}')">✅ Проверить ответ</button>
-        <div class="feedback" id="fb"></div>
-        <button class="next-btn" id="next-btn" onclick="next()">Дальше ➡️</button>
-      </div>`;
-  } else if (t.type === 'caps') {
-    html = `
-      <div class="card" id="task-card">
-        <div class="hint-box">
-          <div class="hint-title">⌨️ КЛАВИАТУРА: БОЛЬШИЕ БУКВЫ</div>
-          <div>Нажми кнопку <span class="key-name">Caps Lock (Капс Лок)</span>. 🔠</div>
-          <span class="hint-warning" style="display:block; color:#15803d; border-color:#86efac">💡 СОВЕТ: Лампочка Caps Lock (Капс Лок) должна гореть!</span>
-        </div>
-        <div class="instruction">Напиши БОЛЬШИМИ буквами: <span class="target">«${t.data}»</span></div>
-        <input type="text" class="typing-input" id="t-in" autocomplete="off">
-        <button class="check-btn" onclick="checkIn('${t.data}')">✅ Проверить ответ</button>
-        <div class="feedback" id="fb"></div>
-        <button class="next-btn" id="next-btn" onclick="next()">Дальше ➡️</button>
-      </div>`;
-  } else if (t.type === 'punct') {
-    html = `
-      <div class="card" id="task-card">
-        <div class="hint-box">
-          <div class="hint-title">⌨️ КЛАВИАТУРА: ЗАПЯТАЯ И ТОЧКА</div>
-          <div>Запятая: <span class="key-name">Shift (Шифт)</span> + <span class="key-name">. (Точка)</span>. <br>Не забудь <b>Space (Пробел)</b> после запятой! ✍️</div>
-          <span class="hint-warning" id="caps-warn">⚠️ Выключи Caps Lock (Капс Лок)! Лампочка не должна гореть.</span>
-        </div>
-        <div class="instruction">Перепиши правильно: <span class="target">«${t.data.exp}»</span></div>
-        <input type="text" class="typing-input" id="t-in" autocomplete="off">
-        <button class="check-btn" onclick="checkIn('${t.data.exp}')">✅ Проверить ответ</button>
-        <div class="feedback" id="fb"></div>
-        <button class="next-btn" id="next-btn" onclick="next()">Дальше ➡️</button>
-      </div>`;
-  }
-  
-  container.innerHTML = html;
-  const tin = document.getElementById('t-in');
-  if(tin) tin.focus();
+function refreshCapsOverlay(){
+  const ov=document.getElementById('caps-overlay');
+  if(!ov) return;
+  const task=tasks[curIdx];
+  const isCapsTask = task && task.kind === 'caps';
+  // Оверлей поверх поля — только если CapsLock мешает (не на задании caps)
+  const blockKinds=['shift','punct','corr','sel'];
+  const shouldBlock = capsOn && task && blockKinds.includes(task.kind) && !isCapsTask;
+  ov.classList.toggle('show', shouldBlock);
 }
 
-function sStart(e) { if(e.target.dataset.idx) { selDrag = { active: true, start: parseInt(e.target.dataset.idx), end: parseInt(e.target.dataset.idx) }; updateHl(); } }
-function sMove(e) { if(selDrag.active && e.target.dataset.idx) { selDrag.end = parseInt(e.target.dataset.idx); updateHl(); } }
-function sEnd() { selDrag.active = false; }
-function updateHl() {
-  const min = Math.min(selDrag.start, selDrag.end), max = Math.max(selDrag.start, selDrag.end);
-  document.querySelectorAll('.char').forEach(c => c.classList.toggle('hl', parseInt(c.dataset.idx) >= min && parseInt(c.dataset.idx) <= max));
+// ══════════════════════════════════════════════════════
+//  СТАРТ
+// ══════════════════════════════════════════════════════
+function buildTaskList(){
+  return shuffle([...ALL_TASKS]).slice(0,30);
+}
+function start(){
+  tasks=buildTaskList(); curIdx=0; score=0; taskResults=[];
+  document.getElementById('task-container').style.display='block';
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('prog-wrap').style.display='flex';
+  renderProgress(); renderTask();
+}
+function restart(){start();}
+
+function renderProgress(){
+  const total=tasks.length;
+  document.getElementById('prog-lbl').textContent=`Задание ${Math.min(curIdx+1,total)} из ${total}`;
+  document.getElementById('prog-fill').style.width=`${curIdx/total*100}%`;
+  document.getElementById('score-badge').textContent=`⭐ ${Math.round(score*10)/10} / 10`;
 }
 
-function checkSel() {
-  const t = tasks[curIdx].data;
-  const min = Math.min(selDrag.start, selDrag.end), max = Math.max(selDrag.start, selDrag.end);
-  const selected = t.s.substring(min, max + 1).trim().toLowerCase();
-  if(selected === t.t.toLowerCase()) win(); 
-  else fail("Неверно выделено. Выдели только слово «" + t.t + "» 🤔");
-}
+// ══════════════════════════════════════════════════════
+//  РЕНДЕР ЗАДАНИЯ
+// ══════════════════════════════════════════════════════
+function renderTask(){
+  if(curIdx>=tasks.length){showResults();return;}
+  renderProgress();
+  taskScored=false;
+  dropKey();
+  selDrag={active:false,startChar:-1,endChar:-1};
 
-function renderCorr() {
-  let h = '';
-  corrState.chars.forEach((c, i) => {
-    if(i === corrState.pos) h += '<span class="caret"></span>';
-    h += `<span class="ch-span" data-idx="${i}">${c}</span>`;
+  const t=tasks[curIdx];
+  const icons={sel:'🖱️',corr:'⌨️',shift:'⬆️',punct:'📝',caps:'🔠'};
+  const names={sel:'Выделение мышью',corr:'Исправление ошибки',shift:'Заглавная буква (Shift)',punct:'Пробел после знака',caps:'Caps Lock (Капс Лок)'};
+
+  let body='';
+  if(t.kind==='sel')   body=tmplSel(t);
+  if(t.kind==='corr')  body=tmplCorr(t);
+  if(t.kind==='shift') body=tmplShift(t);
+  if(t.kind==='punct') body=tmplPunct(t);
+  if(t.kind==='caps')  body=tmplCaps(t);
+
+  document.getElementById('task-container').innerHTML=`
+    <div class="card" id="main-card">
+      <div class="task-badge"><span>${icons[t.kind]}</span>${names[t.kind]}</div>
+      ${body}
+      <div class="divider"></div>
+      <div class="sec-feedback" id="feedback">
+        <span class="emo" id="fb-emo"></span>
+        <span id="fb-txt"></span>
+      </div>
+      <button class="next-btn" id="next-btn" onclick="nextTask()">Следующее задание ➡️</button>
+    </div>`;
+
+  // post-init
+  if(t.kind==='corr')  initCorr();
+  if(t.kind==='shift') setTimeout(()=>focusEl('shift-inp'),60);
+  if(t.kind==='punct') setTimeout(()=>focusEl('punct-inp'),60);
+  if(t.kind==='caps')  setTimeout(()=>focusEl('caps-inp'),60);
+  refreshCapsOverlay();
+}
+function focusEl(id){const el=document.getElementById(id);if(el)el.focus();}
+
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: ВЫДЕЛЕНИЕ МЫШЬЮ (по буквам)
+// ══════════════════════════════════════════════════════
+// Каждый символ — отдельный span с глобальным charIdx
+let charMap=[]; // charIdx → {wordIdx, charInWord}
+
+function tmplSel(t){
+  charMap=[];
+  const words=t.sentence.split(' ');
+  let html=''; let ci=0;
+  words.forEach((w,wi)=>{
+    for(let k=0;k<w.length;k++){
+      const ch=w[k];
+      charMap.push({ch, isSpace:false});
+      html+=`<span class="wt-ch" data-ci="${ci}">${ch}</span>`;
+      ci++;
+    }
+    if(wi<words.length-1){
+      charMap.push({ch:' ', isSpace:true});
+      html+=`<span class="wt-sp" data-ci="${ci}"> </span>`;
+      ci++;
+    }
   });
-  if(corrState.pos === corrState.chars.length) h += '<span class="caret"></span>';
+
+  return `
+  <div class="sec-hint">
+    <b>Зажми <span style="color:#1d4ed8">левую кнопку мыши (ЛКМ)</span> и протяни по буквам слова — они выделятся синим, как в Windows.</b>
+    <div class="mouse-row">
+      <div class="mouse-body">
+        <div class="mouse-top"><div class="mouse-l lit"></div><div class="mouse-r"></div></div>
+        <div class="mouse-wheel"></div><div class="mouse-bot"></div>
+      </div>
+      <span><b style="color:#1d4ed8">Зажми и протяни</b><br>левую кнопку по слову</span>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Выдели слово <span class="target">«${t.target}»</span> в предложении:<br>
+    <span style="font-size:1rem;font-weight:600;color:var(--muted)">💡 Слово может начинаться с большой буквы — это нормально, выделяй его целиком</span></div>
+    <div class="sentence-area" id="sent-area"
+         onmousedown="sdStart(event)"
+         onmousemove="sdMove(event)"
+         onmouseup="sdEnd(event)"
+    >${html}</div>
+  </div>
+  <div class="divider"></div>
+  <button class="check-btn" onclick="checkSel('${t.target}')">✅ Проверить</button>`;
+}
+
+function ciAt(e){
+  const el=e.target;
+  if(el.dataset.ci!==undefined) return parseInt(el.dataset.ci);
+  return -1;
+}
+function applySelHL(){
+  if(selDrag.startChar<0) return;
+  const s=Math.min(selDrag.startChar,selDrag.endChar);
+  const e=Math.max(selDrag.startChar,selDrag.endChar);
+  document.querySelectorAll('.wt-ch,.wt-sp').forEach(el=>{
+    const ci=parseInt(el.dataset.ci);
+    el.classList.toggle('hl', ci>=s && ci<=e);
+  });
+}
+function sdStart(ev){
+  if(ev.button!==0) return;
+  ev.preventDefault();
+  const i=ciAt(ev); if(i<0) return;
+  selDrag={active:true,startChar:i,endChar:i};
+  applySelHL();
+}
+function sdMove(ev){
+  if(!selDrag.active) return;
+  const i=ciAt(ev); if(i<0) return;
+  selDrag.endChar=i; applySelHL();
+}
+function sdEnd(){ selDrag.active=false; }
+
+function checkSel(target){
+  if(selDrag.startChar<0){giveErr(`Зажми мышку и протяни по буквам слова «${target}»`);return;}
+  const s=Math.min(selDrag.startChar,selDrag.endChar);
+  const e=Math.max(selDrag.startChar,selDrag.endChar);
+  let selected='';
+  for(let ci=s;ci<=e;ci++){
+    if(charMap[ci]) selected+=charMap[ci].ch;
+  }
+  selected=selected.trim();
+  // Сравниваем без учёта регистра — слово может стоять в начале предложения с заглавной буквой
+  if(selected.toLowerCase()===target.toLowerCase()){
+    giveOk('Отлично! Ты правильно выделил слово! 🎉');
+  } else if(!selected){
+    giveErr(`Зажми мышку и протяни по буквам слова «${target}»`);
+  } else {
+    giveErr(`Выделено: «${selected}». Нужно выделить только слово «${target}»`);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: ИСПРАВЛЕНИЕ ОШИБКИ
+// ══════════════════════════════════════════════════════
+function tmplCorr(t){
+  cState={chars:t.wrong.split(''),pos:t.wrong.length};
+  return `
+  <div class="sec-hint">
+    <b>📌 Памятка:</b><br>
+    <span class="kc">← Backspace (Бэкспейс)</span> — удаляет букву <b>перед</b> курсором (слева)<br>
+    <span class="kc">Delete (Делит)</span> — удаляет букву <b>после</b> курсора (справа)<br>
+    После удаления можно <b>допечатать</b> нужную букву с клавиатуры!
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Исправь ошибку в слове:</div>
+    <div class="corr-correct">Правильно: <strong>${t.correct}</strong></div>
+    <div class="editable-word" id="eword" tabindex="0"
+         onclick="ewClick(event)"
+         onfocus="document.getElementById('eword').classList.add('focused')"
+         onblur="document.getElementById('eword').classList.remove('focused')"
+    >${corrRender()}</div>
+    <div class="key-buttons">
+      <button class="key-btn bs" id="btn-bs" onclick="corrBS()">⬅ Backspace (Бэкспейс)</button>
+      <button class="key-btn dl" id="btn-dl" onclick="corrDel()">Delete (Делит) ➡</button>
+    </div>
+    <div class="typing-hint">💡 Нажми на букву — курсор встанет перед ней. Удали лишнюю и допечатай нужную.</div>
+  </div>
+  <div class="divider"></div>
+  <div style="position:relative">
+    <div id="caps-overlay" class="caps-overlay">
+      🔴 Выключи <b>Caps Lock (Капс Лок)</b>, чтобы ввод букв работал правильно!
+    </div>
+  </div>
+  <button class="check-btn" onclick="checkCorr('${t.correct}')">✅ Проверить</button>`;
+}
+
+function corrRender(){
+  const{chars,pos}=cState; let h='';
+  chars.forEach((c,i)=>{
+    if(i===pos) h+=`<span class="caret"></span>`;
+    h+=`<span class="ch" data-i="${i}" onclick="chClick(event,${i})">${c}</span>`;
+  });
+  if(pos>=chars.length) h+=`<span class="caret"></span>`;
   return h;
 }
-function wordClick(e) {
-  if(e.target.dataset.idx !== undefined) corrState.pos = parseInt(e.target.dataset.idx);
-  else corrState.pos = corrState.chars.length;
-  refreshCorr();
+function corrRefresh(){const el=document.getElementById('eword');if(el){el.innerHTML=corrRender();el.focus();}}
+function ewClick(e){if(e.target===document.getElementById('eword')){cState.pos=cState.chars.length;corrRefresh();}}
+function chClick(e,i){e.stopPropagation();cState.pos=i;corrRefresh();}
+function corrBS(){flashKey('btn-bs');if(cState.pos>0){cState.chars.splice(cState.pos-1,1);cState.pos--;}corrRefresh();}
+function corrDel(){flashKey('btn-dl');if(cState.pos<cState.chars.length){cState.chars.splice(cState.pos,1);}corrRefresh();}
+function corrType(ch){
+  if(capsOn){return;}  // не печатаем если CapsLock включён (блокировка идёт через оверлей)
+  cState.chars.splice(cState.pos,0,ch);cState.pos++;corrRefresh();
 }
-function doType(char) { corrState.chars.splice(corrState.pos, 0, char); corrState.pos++; refreshCorr(); }
-function doBS() { if(corrState.pos > 0) { corrState.chars.splice(corrState.pos-1, 1); corrState.pos--; refreshCorr(); } }
-function doDel() { if(corrState.pos < corrState.chars.length) { corrState.chars.splice(corrState.pos, 1); refreshCorr(); } }
-function refreshCorr() { document.getElementById('ew').innerHTML = renderCorr(); }
-
-function checkCorr(c) { 
-  if(corrState.chars.join('').toLowerCase() === c.toLowerCase()) win(); 
-  else fail("Слово исправлено неверно. Посмотри на образец! 🤔"); 
+function flashKey(id){const el=document.getElementById(id);if(!el)return;el.classList.add('pressed');setTimeout(()=>el.classList.remove('pressed'),160);}
+function initCorr(){
+  setTimeout(()=>{const el=document.getElementById('eword');if(el)el.focus();},60);
+  setKey(e=>{
+    if(e.key==='Backspace'){e.preventDefault();corrBS();return;}
+    if(e.key==='Delete'){e.preventDefault();corrDel();return;}
+    if(e.key==='ArrowLeft'){e.preventDefault();if(cState.pos>0){cState.pos--;corrRefresh();}return;}
+    if(e.key==='ArrowRight'){e.preventDefault();if(cState.pos<cState.chars.length){cState.pos++;corrRefresh();}return;}
+    if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();corrType(e.key);}
+  });
+}
+function checkCorr(correct){
+  const cur=cState.chars.join('');
+  if(strEq(cur,correct)) giveOk(`Правильно! Слово «${correct}» исправлено! 🎉`);
+  else if(cur.toLowerCase()===correct.toLowerCase()) giveErr(`Почти! Проверь регистр букв — должно быть точно «${correct}»`);
+  else giveErr(`Пока не так... Должно получиться «${correct}». Попробуй ещё!`);
 }
 
-function checkIn(exp) {
-  const val = document.getElementById('t-in').value.trim();
-  const type = tasks[curIdx].type;
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: SHIFT
+// ══════════════════════════════════════════════════════
+function tmplShift(t){
+  return `
+  <div class="sec-warn">
+    <b>⚠️ Сначала проверь!</b><br>
+    Посмотри на клавиатуру — есть ли горящая лампочка 💡 рядом с <span class="kc">Caps Lock (Капс Лок)</span>?<br>
+    Если <b style="color:var(--green)">горит</b> — нажми <span class="kc">Caps Lock (Капс Лок)</span> один раз, чтобы <b>выключить</b>.<br>
+    <span style="font-size:0.95rem;color:#92400e">Когда Caps Lock включён — Shift работает наоборот: буква будет маленькой!</span>
+  </div>
+  <div class="sec-hint">
+    <b>📌 Памятка:</b> Чтобы написать заглавную букву:<br>
+    <div style="margin-top:10px;font-size:1.15rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span class="kc" style="font-size:1rem">Shift (Шифт)</span>
+      <span style="font-size:1.5rem">+</span>
+      <span class="kc" style="font-size:1rem">${t.lower[0].toUpperCase()}</span>
+      <span style="font-size:1.5rem;color:var(--primary)">→</span>
+      <span style="font-size:1.9rem;font-weight:900;color:var(--primary)">${t.upper[0]}</span>
+    </div>
+    Удержи <span class="kc">Shift (Шифт)</span> и нажми первую букву слова.
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Напечатай слово с <b>заглавной</b> буквы:<br>
+      <span style="color:var(--red)">«${t.lower}»</span>
+      <span style="font-size:1.2rem"> → </span>
+      <span style="color:var(--green)">«${t.upper}»</span>
+    </div>
+    <div class="input-row">
+      <div class="input-arrow">
+        <span class="arr-txt">ПИШИ СЮДА</span>
+        <span class="arr-ico">👉</span>
+      </div>
+      <div class="input-rel" style="flex:1">
+        <input class="typing-input" id="shift-inp" type="text"
+          autocomplete="off" spellcheck="false" placeholder="Напечатай здесь…">
+        <div id="caps-overlay" class="caps-overlay">
+          🔴 Выключи <b>Caps Lock (Капс Лок)</b> перед вводом!
+        </div>
+      </div>
+    </div>
+    <div class="typing-hint">💡 Удержи <b>Shift (Шифт)</b> и нажми первую букву слова</div>
+  </div>
+  <div class="divider"></div>
+  <button class="check-btn" onclick="checkShift('${t.upper}')">✅ Проверить</button>`;
+}
+function checkShift(exp){
+  const v=normStr(document.getElementById('shift-inp').value||'');
+  if(strEq(v,exp)) giveOk(`Отлично! «${exp}» — заглавная буква написана правильно! 🎉`);
+  else if(v.toLowerCase()===exp.toLowerCase()) giveErr(`Почти! Проверь: первая буква должна быть заглавной — «${exp}»`);
+  else giveErr(`Не совсем... Нужно написать «${exp}». Удержи Shift (Шифт) и нажми первую букву!`);
+}
 
-  if ((type === 'shift' || type === 'punct') && val.length > 0) {
-      if (val[0] === val[0].toUpperCase() && !usedShiftForFirstLetter) {
-          fail("Ты использовал Caps Lock (Капс Лок)! ❌ Выключи его и напиши первую букву с зажатым <b>Shift (Шифт)</b>.");
-          return;
-      }
-  }
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: ПРОБЕЛ ПОСЛЕ ЗНАКА
+// ══════════════════════════════════════════════════════
+function tmplPunct(t){
+  return `
+  <div class="sec-hint">
+    <b>📌 Памятка:</b> После знака препинания — <b>один пробел</b>:<br>
+    <div style="margin-top:10px;font-size:1.25rem;font-weight:700;font-family:monospace;">
+      ${t.before},<span style="background:#fef08a;padding:2px 8px;border-radius:4px;margin:0 3px">пробел</span>${t.after}.
+    </div>
+    <div style="margin-top:12px;background:#fff;border-radius:10px;padding:10px 14px;font-size:1rem;line-height:1.8;border:1px solid var(--border);">
+      ⌨️ <b>Как поставить запятую:</b><br>
+      1. Убедись, что включён <b>русский язык (RU)</b> на панели задач.<br>
+      2. Нажми <span class="kc">Shift (Шифт)</span> + <span class="kc">. (точка)</span> — получится запятая <b style="font-size:1.2rem">,</b><br>
+      3. После запятой нажми <span class="kc">Пробел (Space)</span> один раз.
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Напечатай правильно: <span class="target">«${t.expected}»</span></div>
+    <div class="input-row">
+      <div class="input-arrow">
+        <span class="arr-txt">ПИШИ СЮДА</span>
+        <span class="arr-ico">👉</span>
+      </div>
+      <div class="input-rel" style="flex:1">
+        <input class="typing-input" id="punct-inp" type="text"
+          autocomplete="off" spellcheck="false" placeholder="Напечатай здесь…">
+        <div id="caps-overlay" class="caps-overlay">
+          🔴 Выключи <b>Caps Lock (Капс Лок)</b> перед вводом!
+        </div>
+      </div>
+    </div>
+    <div class="typing-hint">
+      💡 Запятая: <span class="kc">Shift (Шифт)</span> + <span class="kc">.</span> &nbsp;|&nbsp;
+      Пробел: <span class="kc">Пробел (Space)</span> &nbsp;|&nbsp;
+      Точка: клавиша <span class="kc">.</span>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <button class="check-btn" onclick="checkPunct('${t.expected}')">✅ Проверить</button>`;
+}
+function checkPunct(exp){
+  const raw=document.getElementById('punct-inp').value||'';
+  const v=normStr(raw);
+  const e=normStr(exp);
+  if(strEq(v,e)){giveOk('Правильно! Пробел после запятой поставлен верно! 🎉');return;}
+  // подсказки
+  const noComma=!v.includes(',');
+  const noDot=!v.endsWith('.');
+  const noSpace=v.includes(',')&&!v.includes(', ');
+  const wrongCase=v.toLowerCase()===e.toLowerCase();
+  if(noComma) giveErr(`Не хватает запятой! Нажми Shift (Шифт) + точку, чтобы поставить запятую «,»`);
+  else if(noDot) giveErr(`Не хватает точки в конце! Нажми клавишу «.» в конце предложения.`);
+  else if(noSpace) giveErr(`После запятой нужен пробел! Нажми Пробел (Space) после запятой.`);
+  else if(wrongCase) giveErr(`Почти! Проверь заглавные и строчные буквы — должно быть «${exp}»`);
+  else giveErr(`Не так... Должно быть «${exp}». Проверь запятую, пробел и точку.`);
+}
 
-  if(val === exp) {
-    win();
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: CAPS LOCK
+// ══════════════════════════════════════════════════════
+function tmplCaps(t){
+  return `
+  <div class="sec-hint">
+    <b>Caps Lock (Капс Лок)</b> — включает режим <b>ЗАГЛАВНЫХ</b> букв.<br>
+    Нажми <span class="kc">Caps Lock</span> → напечатай слово → снова <span class="kc">Caps Lock</span> чтобы выключить.
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Напечатай слово <b>ЗАГЛАВНЫМИ</b> буквами: <span class="target">«${t.word}»</span></div>
+    <div class="input-row">
+      <div class="input-arrow">
+        <span class="arr-txt">ПИШИ СЮДА</span>
+        <span class="arr-ico">👉</span>
+      </div>
+      <input class="typing-input" id="caps-inp" type="text"
+        autocomplete="off" spellcheck="false" placeholder="Напечатай здесь…">
+    </div>
+    <div class="typing-hint">💡 Нажми <b>Caps Lock (Капс Лок)</b>, напечатай слово, потом снова <b>Caps Lock</b> чтобы выключить</div>
+  </div>
+  <div class="divider"></div>
+  <button class="check-btn" onclick="checkCaps('${t.word}')">✅ Проверить</button>`;
+}
+function checkCaps(exp){
+  // Проверяем реальный ввод БЕЗ toUpperCase — ученик должен сам напечатать заглавными
+  const v=normStr(document.getElementById('caps-inp').value||'');
+  if(v===exp){
+    giveOk(`Отлично! «${exp}» — заглавные буквы набраны правильно! 🎉`);
+  } else if(v.toUpperCase()===exp && v!==exp){
+    giveErr(`Почти! Но буквы строчные. Включи <b>Caps Lock</b> и напечатай снова — должно быть «${exp}».`);
+  } else if(v.toLowerCase()===exp.toLowerCase() && v!==exp){
+    giveErr(`Ты написал строчными буквами. Нажми Caps Lock, тогда буквы будут ЗАГЛАВНЫМИ.`);
   } else {
-    if (exp.endsWith('.') && !val.endsWith('.')) {
-      fail("Ты забыл поставить точку в конце! 📍");
-    } else if (exp.includes(',') && !val.includes(',')) {
-      fail("Кажется, ты пропустил запятую! ✍️");
-    } else if (val.toLowerCase() === exp.toLowerCase()) {
-      fail("Ошибка в регистре! Проверь БОЛЬШИЕ и маленькие буквы. 🔠");
-    } else if (val.replace(/\s/g, '') === exp.replace(/\s/g, '')) {
-      fail("Забыл поставить Space (Пробел)! Проверь внимательно. ✍️");
-    } else {
-      fail("Ошибка в буквах! Напиши точно так же, как в образце. 🤔");
-    }
+    giveErr(`Не так. Нужно написать «${exp}». Нажми Caps Lock и попробуй ещё раз!`);
   }
 }
 
-function win() {
-  score++; document.getElementById('fb').className = "feedback ok";
-  document.getElementById('fb').innerHTML = "Правильно! Ты молодец! 🌟✨";
-  document.getElementById('task-card').classList.add('ok');
-  document.getElementById('next-btn').style.display = 'block';
+// ══════════════════════════════════════════════════════
+//  ОБРАБОТЧИК КЛАВИШ
+// ══════════════════════════════════════════════════════
+function setKey(fn){_keyFn=fn;}
+function dropKey(){_keyFn=null;}
+
+// ══════════════════════════════════════════════════════
+//  FEEDBACK
+// ══════════════════════════════════════════════════════
+const OK_EMO=['🎉','🌟','⭐','🥳','👏','😄','🦋','🏆'];
+const BAD_EMO=['💪','😊','🤔','🌈','😅','🙃'];
+
+function giveOk(msg){
+  if(taskScored)return;
+  taskScored=true;
+  score=Math.min(10,Math.round((score+10/tasks.length)*10)/10);
+  renderProgress();
+  taskResults.push({ok:true,label:kindName(tasks[curIdx].kind)});
+  showFb(true,msg);
+  document.getElementById('next-btn').classList.add('show');
+  document.getElementById('main-card').className='card ok';
+}
+function giveErr(msg){showFb(false,msg);document.getElementById('main-card').className='card bad';}
+function showFb(ok,msg){
+  const fb=document.getElementById('feedback');
+  fb.className=`sec-feedback show ${ok?'ok':'bad'}`;
+  document.getElementById('fb-emo').textContent=ok?rnd(OK_EMO):rnd(BAD_EMO);
+  document.getElementById('fb-txt').textContent=msg;
+}
+function kindName(k){
+  return {sel:'Выделение',corr:'Исправление',shift:'Shift (заглавная)',punct:'Пробел+запятая',caps:'Caps Lock'}[k]||k;
 }
 
-function fail(m) {
-  const fb = document.getElementById('fb');
-  fb.className = "feedback err"; 
-  fb.innerHTML = m;
-  document.getElementById('task-card').classList.add('bad');
-  setTimeout(() => document.getElementById('task-card').classList.remove('bad'), 400);
+// ══════════════════════════════════════════════════════
+//  НАВИГАЦИЯ
+// ══════════════════════════════════════════════════════
+function nextTask(){
+  if(!taskScored) taskResults.push({ok:false,label:kindName(tasks[curIdx].kind)});
+  curIdx++; dropKey(); renderTask();
 }
 
-function next() {
-  curIdx++;
-  if(curIdx < 30) renderTask();
-  else {
-    document.getElementById('task-container').style.display = 'none';
-    document.getElementById('prog-wrap').style.display = 'none';
-    document.getElementById('results-screen').style.display = 'block';
-    document.getElementById('res-score').textContent = `⭐ ${score} / 30`;
-  }
+// ══════════════════════════════════════════════════════
+//  РЕЗУЛЬТАТЫ
+// ══════════════════════════════════════════════════════
+function showResults(){
+  dropKey();
+  document.getElementById('task-container').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  document.getElementById('prog-wrap').style.display='none';
+  document.getElementById('caps-banner').classList.remove('show');
+  const s=Math.min(10,Math.round(score));
+  document.getElementById('res-score').textContent=s;
+  let emo,title,sub;
+  if(s>=9){emo='🏆';title='Отлично!';sub='Ты настоящий компьютерный гений!';}
+  else if(s>=7){emo='🌟';title='Хорошо!';sub='Ты очень хорошо справился с заданиями!';}
+  else if(s>=5){emo='😊';title='Неплохо!';sub='Ещё немного практики — и ты мастер!';}
+  else{emo='💪';title='Не сдавайся!';sub='Попробуй ещё раз — у тебя всё получится!';}
+  document.getElementById('res-emoji').textContent=emo;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-sub').textContent=sub;
+  const ok=taskResults.filter(r=>r.ok).length;
+  const tot=taskResults.length;
+  document.getElementById('res-list').innerHTML=
+    `<div class="result-item" style="background:#dbeafe;font-weight:800;">
+      <span style="font-size:1.4rem">📊</span>
+      <span>Правильных ответов: ${ok} из ${tot}</span>
+    </div>`+
+    taskResults.map(r=>`
+      <div class="result-item">
+        <span style="font-size:1.3rem">${r.ok?'✅':'❌'}</span>
+        <span>${r.label}</span>
+        <span style="margin-left:auto;font-size:0.9rem;color:var(--muted)">${r.ok?'+балл':'—'}</span>
+      </div>`).join('');
 }
 
-initGame();
+// ══════════════════════════════════════════════════════
+//  ЗАПУСК
+// ══════════════════════════════════════════════════════
+start();
 </script>
 </body>
 </html>
