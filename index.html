@@ -424,9 +424,10 @@ function restart(){start();}
 
 function renderProgress(){
   const total=tasks.length;
+  const correct=taskResults.filter(r=>r.ok).length;
   document.getElementById('prog-lbl').textContent=`Задание ${Math.min(curIdx+1,total)} из ${total}`;
   document.getElementById('prog-fill').style.width=`${curIdx/total*100}%`;
-  document.getElementById('score-badge').textContent=`⭐ ${Math.round(score*10)/10} / 10`;
+  document.getElementById('score-badge').textContent=`✅ ${correct} / ${total}`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -806,9 +807,8 @@ const BAD_EMO=['💪','😊','🤔','🌈','😅','🙃'];
 function giveOk(msg){
   if(taskScored)return;
   taskScored=true;
-  score=Math.min(10,Math.round((score+10/tasks.length)*10)/10);
-  renderProgress();
   taskResults.push({ok:true,label:kindName(tasks[curIdx].kind)});
+  renderProgress();  // обновить счётчик правильных ответов в прогресс-баре
   showFb(true,msg);
   document.getElementById('next-btn').classList.add('show');
   document.getElementById('main-card').className='card ok';
@@ -841,7 +841,13 @@ function showResults(){
   document.getElementById('results-screen').style.display='block';
   document.getElementById('prog-wrap').style.display='none';
   document.getElementById('caps-banner').classList.remove('show');
-  const s=Math.min(10,Math.round(score));
+
+  // Считаем честно: сколько правильных из общего числа заданий
+  const total = tasks.length;
+  const correct = taskResults.filter(r=>r.ok).length;
+  // Масштабируем в 10 баллов, округляем до целого
+  const s = Math.round(correct / total * 10);
+
   document.getElementById('res-score').textContent=s;
   let emo,title,sub;
   if(s>=9){emo='🏆';title='Отлично!';sub='Ты настоящий компьютерный гений!';}
