@@ -274,6 +274,118 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;color
 .restart-btn:hover{transform:translateY(-2px);}
 
 .divider{height:1px;background:linear-gradient(90deg,transparent,#c7d2e8 30%,#c7d2e8 70%,transparent);margin:14px 0;}
+
+/* ── CLICK TASK ── */
+.desktop-area{
+  background:linear-gradient(160deg,#1a6bd4 0%,#1e40af 100%);
+  border-radius:14px;padding:30px 20px 22px;
+  display:flex;align-items:center;justify-content:center;
+  min-height:210px;position:relative;
+  box-shadow:inset 0 2px 12px rgba(0,0,0,.25);
+  user-select:none;
+}
+.desktop-hint-bar{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.38);color:#fff;font-size:0.88rem;font-weight:700;
+  padding:4px 16px;border-radius:50px;white-space:nowrap;pointer-events:none;
+}
+.desk-icon{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  cursor:pointer;padding:14px 20px;border-radius:14px;
+  transition:background .08s;
+  -webkit-tap-highlight-color:transparent;outline:none;
+}
+.desk-icon:hover{background:rgba(255,255,255,.15);}
+.desk-icon-img{
+  font-size:5.5rem;line-height:1;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));
+  transition:transform .08s;
+  pointer-events:none;
+}
+.desk-icon:active .desk-icon-img{transform:scale(.9);}
+.desk-icon-lbl{
+  color:#fff;font-size:1.05rem;font-weight:800;text-align:center;
+  text-shadow:0 1px 5px rgba(0,0,0,.8);max-width:150px;line-height:1.3;
+  pointer-events:none;
+}
+/* анимация подсветки при клике */
+@keyframes clickFlash{
+  0%{background:rgba(255,255,255,0);}
+  40%{background:rgba(255,255,255,.5);}
+  100%{background:rgba(255,255,255,0);}
+}
+.desk-icon.flashing{animation:clickFlash .2s ease;}
+
+.click-dots{
+  display:flex;gap:10px;justify-content:center;margin:16px 0 4px;
+}
+.click-dot{
+  width:22px;height:22px;border-radius:50%;
+  background:#d1d5db;border:2px solid #9ca3af;
+  transition:all .15s;
+}
+.click-dot.done{
+  background:var(--green);border-color:#15803d;
+  transform:scale(1.2);
+}
+.click-msg{
+  text-align:center;font-size:1.1rem;font-weight:800;
+  min-height:1.8em;color:var(--text);
+}
+
+/* ── RIGHT CLICK TASK ── */
+.rclick-area{
+  position:relative;
+  background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
+  border:2px solid #bae6fd;border-radius:14px;
+  min-height:200px;display:flex;align-items:center;justify-content:center;
+  gap:20px; flex-wrap:wrap; padding:16px;
+  overflow:visible;
+}
+.rclick-img{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 20px;border-radius:14px;cursor:context-menu;
+  transition:background .12s, opacity .4s;border:3px dashed transparent;
+  user-select:none;
+}
+.rclick-img:hover{background:rgba(37,99,235,.08);border-color:#93c5fd;}
+.rclick-copy{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 20px;border-radius:14px;
+  background:rgba(22,163,74,.08);border:3px dashed #86efac;
+  user-select:none;animation:popIn .35s ease;
+}
+.rclick-empty{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  width:140px;height:140px;border-radius:14px;
+  border:3px dashed #f97316;background:rgba(249,115,22,.06);
+  cursor:context-menu;transition:background .12s;
+  user-select:none;
+}
+.rclick-empty:hover{background:rgba(249,115,22,.12);}
+.rclick-empty-hint{
+  font-size:0.95rem;font-weight:800;color:#92400e;text-align:center;padding:10px;line-height:1.4;
+}
+.rclick-emoji{font-size:5.5rem;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.15));}
+.rclick-lbl{font-size:1.05rem;font-weight:800;color:var(--text);}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+/* Контекстное меню */
+.ctx-menu{
+  position:absolute;z-index:200;
+  background:#fff;border:1px solid #d1d5db;
+  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);
+  min-width:155px;overflow:hidden;
+  animation:ctxPop .12s ease;
+}
+@keyframes ctxPop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.ctx-item{
+  padding:11px 18px;font-size:1.05rem;font-weight:700;cursor:pointer;
+  color:var(--text);transition:background .1s;border-bottom:1px solid #f1f5f9;
+}
+.ctx-item:last-child{border-bottom:none;}
+.ctx-item:hover{background:#eff6ff;color:var(--primary);}
+.ctx-item.ctx-highlight{background:#fef9c3;}
 </style>
 </head>
 <body>
@@ -351,6 +463,26 @@ const ALL_TASKS = [
   {kind:'caps', word:'ПРИРОДА'},
   {kind:'caps', word:'ЗЕМЛЯ'},
   {kind:'caps', word:'КАЗАХСТАН'},
+  // CLICK — одинарный щелчок (4 шт)
+  {kind:'click', clicks:1, icon:'folder',  label:'Папка «Документы»'},
+  {kind:'click', clicks:1, icon:'folder',  label:'Папка «Мои рисунки»'},
+  {kind:'click', clicks:1, icon:'file',    label:'Ярлык «Блокнот»'},
+  {kind:'click', clicks:1, icon:'file',    label:'Ярлык «Калькулятор»'},
+  // CLICK — двойной щелчок (4 шт)
+  {kind:'click', clicks:2, icon:'folder',  label:'Папка «Школа»'},
+  {kind:'click', clicks:2, icon:'folder',  label:'Папка «Фотографии»'},
+  {kind:'click', clicks:2, icon:'file',    label:'Ярлык «Paint»'},
+  {kind:'click', clicks:2, icon:'file',    label:'Ярлык «Текстовый редактор»'},
+  // RCLICK — правая кнопка + контекстное меню (9 шт)
+  {kind:'rclick', cmd:'Копировать', pic:{emoji:'🌅',label:'Закат солнца'}},
+  {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'🐱',label:'Котёнок'}},
+  {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🌳',label:'Дерево'}},
+  {kind:'rclick', cmd:'Копировать', pic:{emoji:'⚽',label:'Мяч'}},
+  {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'🏠',label:'Домик'}},
+  {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🚂',label:'Паровозик'}},
+  {kind:'rclick', cmd:'Копировать', pic:{emoji:'🎨',label:'Палитра'}},
+  {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'📚',label:'Книги'}},
+  {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🦋',label:'Бабочка'}},
 ];
 
 // ══════════════════════════════════════════════════════
@@ -441,15 +573,19 @@ function renderTask(){
   selDrag={active:false,startChar:-1,endChar:-1};
 
   const t=tasks[curIdx];
-  const icons={sel:'🖱️',corr:'⌨️',shift:'⬆️',punct:'📝',caps:'🔠'};
-  const names={sel:'Выделение мышью',corr:'Исправление ошибки',shift:'Заглавная буква (Shift)',punct:'Пробел после знака',caps:'Caps Lock (Капс Лок)'};
+  const icons={sel:'🖱️',corr:'⌨️',shift:'⬆️',punct:'📝',caps:'🔠',click:'🖱️',rclick:'🖱️'};
+  const names={sel:'Выделение мышью',corr:'Исправление ошибки',shift:'Заглавная буква (Shift)',punct:'Пробел после знака',caps:'Caps Lock (Капс Лок)',
+               click: t && t.clicks===1 ? 'Одинарный щелчок мышью' : 'Двойной щелчок мышью',
+               rclick:'Правая кнопка мыши — контекстное меню'};
 
   let body='';
-  if(t.kind==='sel')   body=tmplSel(t);
-  if(t.kind==='corr')  body=tmplCorr(t);
-  if(t.kind==='shift') body=tmplShift(t);
-  if(t.kind==='punct') body=tmplPunct(t);
-  if(t.kind==='caps')  body=tmplCaps(t);
+  if(t.kind==='sel')    body=tmplSel(t);
+  if(t.kind==='corr')   body=tmplCorr(t);
+  if(t.kind==='shift')  body=tmplShift(t);
+  if(t.kind==='punct')  body=tmplPunct(t);
+  if(t.kind==='caps')   body=tmplCaps(t);
+  if(t.kind==='click')  body=tmplClick(t);
+  if(t.kind==='rclick') body=tmplRClick(t);
 
   document.getElementById('task-container').innerHTML=`
     <div class="card" id="main-card">
@@ -754,6 +890,366 @@ function checkPunct(exp){
 }
 
 // ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: ОДИНАРНЫЙ / ДВОЙНОЙ ЩЕЛЧОК (ЛЕВАЯ КНОПКА)
+// ══════════════════════════════════════════════════════
+let clickState={needed:0, done:0, lastClickTime:0, pendingSingle:null};
+
+function tmplClick(t){
+  const needed = t.clicks;
+  const iconEmoji = t.icon==='folder' ? '📁' : '🗒️';
+  const actionStr = needed===1 ? 'один раз — одинарный щелчок' : 'два раза быстро — двойной щелчок';
+  const hintExtra = needed===1
+    ? 'Используется для <b>выбора</b> (выделения) файла или папки.'
+    : 'Используется для <b>открытия</b> файла или папки.';
+
+  clickState = {needed, done:0, lastClickTime:0, pendingSingle:null};
+
+  return `
+  <div class="sec-hint">
+    Нажми <b style="color:#1d4ed8">ЛЕВУЮ кнопку мыши</b> — это кнопка под указательным пальцем!<br>${hintExtra}
+    <div class="mouse-row" style="margin-top:12px">
+      <div class="mouse-body" id="hint-mouse">
+        <div class="mouse-top">
+          <div class="mouse-l lit" id="hint-ml" style="background:var(--primary)"></div>
+          <div class="mouse-r" id="hint-mr"></div>
+        </div>
+        <div class="mouse-wheel"></div><div class="mouse-bot"></div>
+      </div>
+      <div>
+        <span style="display:inline-block;background:#dbeafe;border:2px solid #3b82f6;border-radius:8px;padding:4px 12px;font-weight:800;color:#1d4ed8;font-size:1rem;">👈 ЛЕВАЯ кнопка</span><br>
+        <span style="font-size:0.95rem;color:var(--muted);margin-top:4px;display:block">Нажми её ${needed===1?'один раз':'два раза быстро'}</span>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task">
+    <div class="instruction">Нажми <b>ЛЕВОЙ кнопкой мыши</b> на значок <b>${actionStr}:</b></div>
+    <div class="desktop-area" id="desktop-area">
+      <div class="desktop-hint-bar" id="desktop-hint-bar">🖱️ ${needed===1?'Щёлкни ЛЕВОЙ кнопкой один раз':'Щёлкни ЛЕВОЙ кнопкой два раза быстро'}</div>
+      <div class="desk-icon" id="desk-icon" tabindex="0"
+           onmousedown="handleIconMousedown(event)">
+        <div class="desk-icon-img">${iconEmoji}</div>
+        <div class="desk-icon-lbl">${t.label}</div>
+      </div>
+    </div>
+    <div class="click-dots" id="click-dots">
+      ${Array.from({length:needed},(_,i)=>`<div class="click-dot" id="dot-${i}"></div>`).join('')}
+    </div>
+    <div class="click-msg" id="click-msg">${needed===1?'⬅️ Жди одного щелчка ЛЕВОЙ кнопкой…':'⬅️ Жди двух быстрых щелчков ЛЕВОЙ кнопкой…'}</div>
+  </div>
+  <div class="divider"></div>
+  <button class="check-btn" id="check-click-btn" onclick="checkClick()" style="display:none">✅ Проверить</button>`;
+}
+
+function handleIconMousedown(e){
+  e.preventDefault();
+  if(taskScored) return;
+  if(e.button !== 0){
+    // Нажали НЕ левой — подсветить левую кнопку
+    highlightWrongButton('left');
+    showClickMsg('❌ Ты нажал не ту кнопку! Нажми <b>ЛЕВУЮ</b> кнопку мыши (под указательным пальцем).','#7c2d12');
+    return;
+  }
+  // Правильная кнопка — анимация
+  flashIcon('desk-icon');
+  const needed=clickState.needed;
+  const now=Date.now();
+  if(needed===1){
+    registerLeftClick();
+  } else {
+    if(clickState.lastClickTime && (now - clickState.lastClickTime) < 500){
+      clearTimeout(clickState.pendingSingle);
+      clickState.pendingSingle=null;
+      clickState.lastClickTime=0;
+      registerLeftClick(); registerLeftClick();
+    } else {
+      clickState.lastClickTime=now;
+      clearTimeout(clickState.pendingSingle);
+      clickState.pendingSingle=setTimeout(()=>{
+        clickState.lastClickTime=0;
+        showClickMsg('😅 Слишком медленно! Нажми два раза <b>быстро-быстро</b> подряд ЛЕВОЙ кнопкой.','#7c2d12');
+      },600);
+    }
+  }
+}
+
+function registerLeftClick(){
+  if(clickState.done>=clickState.needed) return;
+  clickState.done++;
+  const dot=document.getElementById(`dot-${clickState.done-1}`);
+  if(dot) dot.classList.add('done');
+  if(clickState.done===clickState.needed){
+    showClickMsg(clickState.needed===1?'🎉 Отлично! Ты щёлкнул ЛЕВОЙ кнопкой один раз!':'🎉 Двойной щелчок ЛЕВОЙ кнопкой выполнен!','#14532d');
+    document.getElementById('check-click-btn').style.display='inline-block';
+    setTimeout(()=>checkClick(),400);
+  } else {
+    showClickMsg(`Щелчок ${clickState.done} из ${clickState.needed}… ещё раз ЛЕВОЙ кнопкой!`,'#1e40af');
+  }
+}
+
+function checkClick(){
+  if(clickState.done>=clickState.needed){
+    giveOk(clickState.needed===1
+      ? 'Отлично! Правильный одинарный щелчок ЛЕВОЙ кнопкой мыши! 🖱️'
+      : 'Отлично! Правильный двойной щелчок ЛЕВОЙ кнопкой мыши! 🖱️🖱️');
+  } else {
+    giveErr(`Нужно щёлкнуть ЛЕВОЙ кнопкой ${clickState.needed===1?'один раз':'два раза быстро'}. Попробуй ещё!`);
+    clickState.done=0;
+    document.querySelectorAll('.click-dot').forEach(d=>d.classList.remove('done'));
+    document.getElementById('check-click-btn').style.display='none';
+    showClickMsg(clickState.needed===1?'⬅️ Жди одного щелчка ЛЕВОЙ кнопкой…':'⬅️ Жди двух быстрых щелчков ЛЕВОЙ кнопкой…','#1e293b');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ЗАДАНИЕ: ПРАВАЯ КНОПКА + КОНТЕКСТНОЕ МЕНЮ
+// ══════════════════════════════════════════════════════
+/*
+  Сценарии по cmd:
+  - 'Копировать'  → step1: ПКМ на картинку → Копировать
+                    step2: ПКМ на пустое место → Вставить  → рядом появляется копия
+  - 'Вырезать'    → step1: ПКМ на картинку → Вырезать    → картинка исчезает
+                    step2: ПКМ на пустое место → Вставить  → картинка появляется
+  - 'Удалить'     → step1: ПКМ на картинку → Удалить     → картинка исчезает  → ГОТОВО
+  - 'Вставить'    → (не используется как начальная команда — заменён на Копировать/Вырезать)
+*/
+const CONTEXT_CMDS=['Копировать','Вырезать','Удалить','Вставить'];
+
+// step: 'pic'=ПКМ на картинку, 'empty'=ПКМ на пустое место
+let rSt={cmd:'',pic:null,step:'pic',phase:0};
+
+function tmplRClick(t){
+  rSt={cmd:t.cmd, pic:t.pic, step:'pic', phase:0};
+
+  const hintAction = t.cmd==='Копировать'
+    ? 'Нажми правой кнопкой на картинку и выбери «Копировать»'
+    : t.cmd==='Вырезать'
+    ? 'Нажми правой кнопкой на картинку и выбери «Вырезать»'
+    : 'Нажми правой кнопкой на картинку и выбери «Удалить»';
+
+  return `
+  <div class="sec-hint">
+    Нажми <b style="color:#b45309">ПРАВУЮ кнопку мыши</b> — кнопка справа, под средним пальцем.<br>
+    Откроется <b>контекстное меню</b> — список действий. Выбери нужную команду.
+    <div class="mouse-row" style="margin-top:12px">
+      <div class="mouse-body">
+        <div class="mouse-top">
+          <div class="mouse-l" id="rc-hint-ml"></div>
+          <div class="mouse-r" id="rc-hint-mr" style="background:#f97316"></div>
+        </div>
+        <div class="mouse-wheel"></div><div class="mouse-bot"></div>
+      </div>
+      <div>
+        <span style="display:inline-block;background:#fef3c7;border:2px solid #f97316;border-radius:8px;padding:4px 12px;font-weight:800;color:#92400e;font-size:1rem;">👉 ПРАВАЯ кнопка</span><br>
+        <span style="font-size:0.95rem;color:var(--muted);margin-top:4px;display:block">Нажми один раз правой кнопкой</span>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-task" id="rc-task-block">
+    <div class="instruction" id="rc-instruction">
+      Нажми <b>ПРАВОЙ кнопкой мыши</b> на картинку и выбери команду
+      <span class="target">«${t.cmd}»</span>:
+    </div>
+
+    <!-- Рабочая область -->
+    <div class="rclick-area" id="rclick-area">
+
+      <!-- Картинка (объект) -->
+      <div class="rclick-img" id="rclick-img"
+           oncontextmenu="rcOnCtx(event,'pic')"
+           onmousedown="rcOnMD(event,'pic')">
+        <div class="rclick-emoji">${t.pic.emoji}</div>
+        <div class="rclick-lbl">${t.pic.label}</div>
+      </div>
+
+      <!-- Копия картинки (появляется после Вставить при Копировать) -->
+      <div class="rclick-copy" id="rclick-copy" style="display:none">
+        <div class="rclick-emoji">${t.pic.emoji}</div>
+        <div class="rclick-lbl">${t.pic.label}</div>
+        <div style="font-size:0.8rem;color:#15803d;font-weight:800;margin-top:4px">📋 Вставлено!</div>
+      </div>
+
+      <!-- Пустое место для Вставить (показывается после Вырезать/Копировать шаг2) -->
+      <div class="rclick-empty" id="rclick-empty" style="display:none"
+           oncontextmenu="rcOnCtx(event,'empty')"
+           onmousedown="rcOnMD(event,'empty')">
+        <div class="rclick-empty-hint">Нажми сюда правой кнопкой</div>
+      </div>
+
+      <!-- Контекстное меню -->
+      <div class="ctx-menu" id="ctx-menu" style="display:none"></div>
+    </div>
+
+    <div class="click-msg" id="rclick-msg" style="margin-top:12px">
+      ➡️ ${hintAction}
+    </div>
+  </div>
+  <div class="divider"></div>`;
+}
+
+// ── Контекстное меню ──────────────────────────────────
+function buildMenu(items, onSelect){
+  const menu=document.getElementById('ctx-menu');
+  menu.innerHTML=items.map(cmd=>`
+    <div class="ctx-item" data-cmd="${cmd}">${cmd}</div>`).join('');
+  menu.querySelectorAll('.ctx-item').forEach(el=>{
+    el.addEventListener('mousedown',ev=>{ev.stopPropagation();});
+    el.addEventListener('click',()=>{ hideCtxMenu(); onSelect(el.dataset.cmd); });
+  });
+}
+
+function showCtxAt(e, items, onSelect){
+  const area=document.getElementById('rclick-area');
+  const menu=document.getElementById('ctx-menu');
+  if(!area||!menu) return;
+  buildMenu(items, onSelect);
+  const rect=area.getBoundingClientRect();
+  const x=Math.min(e.clientX-rect.left, area.offsetWidth-165);
+  const y=e.clientY-rect.top;
+  menu.style.display='block';
+  menu.style.left=x+'px';
+  menu.style.top=y+'px';
+  setTimeout(()=>document.addEventListener('mousedown',closeCtxOnOutside,{once:true}),60);
+}
+function hideCtxMenu(){
+  const m=document.getElementById('ctx-menu');
+  if(m) m.style.display='none';
+}
+function closeCtxOnOutside(e){
+  const menu=document.getElementById('ctx-menu');
+  if(menu&&!menu.contains(e.target)) hideCtxMenu();
+}
+
+// ── Обработчики ───────────────────────────────────────
+function rcOnMD(e, zone){
+  if(e.button===0){
+    e.preventDefault();
+    highlightWrongButton('right');
+    showRClickMsg('❌ Ты нажал ЛЕВУЮ кнопку! Нажми <b>ПРАВУЮ</b> кнопку мыши (справа, под средним пальцем).','#7c2d12');
+    hideCtxMenu();
+  }
+}
+
+function rcOnCtx(e, zone){
+  e.preventDefault();
+  if(taskScored) return;
+
+  const cmd=rSt.cmd;
+
+  // ШАГ 1 — ПКМ на картинку
+  if(rSt.step==='pic' && zone==='pic'){
+    if(cmd==='Копировать'){
+      showCtxAt(e,['Копировать','Вырезать','Удалить','Вставить'],chosen=>{
+        if(chosen==='Копировать'){
+          showRClickMsg('✅ Скопировано! Теперь нажми <b>ПРАВОЙ кнопкой на пустое место</b> и выбери «Вставить»','#1e40af');
+          // Показываем пустое место справа
+          document.getElementById('rclick-empty').style.display='flex';
+          rSt.step='empty';
+        } else { wrongCmd(chosen, 'Копировать'); }
+      });
+    } else if(cmd==='Вырезать'){
+      showCtxAt(e,['Копировать','Вырезать','Удалить','Вставить'],chosen=>{
+        if(chosen==='Вырезать'){
+          // Картинка исчезает
+          rcHidePic();
+          showRClickMsg('✅ Вырезано! Картинка исчезла. Теперь нажми <b>ПРАВОЙ кнопкой на пустое место</b> и выбери «Вставить»','#1e40af');
+          document.getElementById('rclick-empty').style.display='flex';
+          rSt.step='empty';
+        } else { wrongCmd(chosen,'Вырезать'); }
+      });
+    } else if(cmd==='Удалить'){
+      showCtxAt(e,['Копировать','Вырезать','Удалить','Вставить'],chosen=>{
+        if(chosen==='Удалить'){
+          rcHidePic();
+          showRClickMsg('🎉 Картинка удалена! Всё верно!','#14532d');
+          setTimeout(()=>giveOk('Отлично! Ты нажал ПРАВОЙ кнопкой и выбрал «Удалить» — картинка исчезла! 🗑️'),500);
+        } else { wrongCmd(chosen,'Удалить'); }
+      });
+    }
+  }
+
+  // ШАГ 2 — ПКМ на пустое место (Вставить)
+  else if(rSt.step==='empty' && zone==='empty'){
+    showCtxAt(e,['Копировать','Вырезать','Удалить','Вставить'],chosen=>{
+      if(chosen==='Вставить'){
+        if(cmd==='Копировать'){
+          // Показываем копию рядом с оригиналом
+          document.getElementById('rclick-copy').style.display='flex';
+          document.getElementById('rclick-empty').style.display='none';
+          showRClickMsg('🎉 Вставлено! Рядом появилась копия картинки!','#14532d');
+          setTimeout(()=>giveOk('Отлично! Ты скопировал и вставил картинку — рядом появилась копия! 📋'),500);
+        } else if(cmd==='Вырезать'){
+          // Картинка возвращается
+          rcShowPic();
+          document.getElementById('rclick-empty').style.display='none';
+          showRClickMsg('🎉 Вставлено! Картинка появилась снова!','#14532d');
+          setTimeout(()=>giveOk('Отлично! Ты вырезал и вставил картинку — она появилась на новом месте! ✂️📋'),500);
+        }
+      } else { wrongCmd(chosen,'Вставить'); }
+    });
+  }
+
+  // Клик не в той зоне
+  else if(zone==='pic' && rSt.step==='empty'){
+    showRClickMsg('Картинка уже скопирована! Нажми <b>ПРАВОЙ кнопкой на пустое место</b> справа.','#92400e');
+  }
+}
+
+function rcHidePic(){
+  const img=document.getElementById('rclick-img');
+  if(img){ img.style.opacity='0'; img.style.pointerEvents='none'; img.style.transition='opacity .4s'; }
+}
+function rcShowPic(){
+  const img=document.getElementById('rclick-img');
+  if(img){ img.style.opacity='1'; img.style.pointerEvents='auto'; img.style.transition='opacity .4s'; }
+}
+
+function wrongCmd(chosen, needed){
+  showRClickMsg(`❌ Это «${chosen}». Тебе нужна команда <b>«${needed}»</b>. Нажми правой кнопкой ещё раз!`,'#7c2d12');
+  // Мигаем нужный пункт
+  document.querySelectorAll('.ctx-item').forEach(el=>{
+    if(el.dataset.cmd===needed){ el.classList.add('ctx-highlight'); setTimeout(()=>el.classList.remove('ctx-highlight'),900); }
+  });
+}
+
+function showRClickMsg(html, color){
+  const el=document.getElementById('rclick-msg');
+  if(el){el.innerHTML=html; el.style.color=color||'var(--text)';}
+}
+
+// ── Общая подсветка неправильной кнопки ──
+function highlightWrongButton(side){
+  // side='left' → нужно нажать левую; side='right' → нужно нажать правую
+  // Перемигиваем нужную кнопку на мышке в памятке
+  const mlId = side==='left' ? 'hint-ml' : 'rc-hint-ml';
+  const mrId = side==='left' ? 'hint-mr' : 'rc-hint-mr';
+  const targetId = side==='left' ? 'hint-ml' : 'rc-hint-mr';
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  let count=0;
+  const iv=setInterval(()=>{
+    el.style.background = count%2===0 ? '#ef4444' : '';
+    count++;
+    if(count>5) clearInterval(iv);
+  },200);
+}
+
+function flashIcon(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('flashing');
+  void el.offsetWidth;
+  el.classList.add('flashing');
+  setTimeout(()=>el.classList.remove('flashing'),250);
+}
+
+function showClickMsg(html, color){
+  const el=document.getElementById('click-msg');
+  if(el){el.innerHTML=html; el.style.color=color;}
+}
+
+// ══════════════════════════════════════════════════════
 //  ЗАДАНИЕ: CAPS LOCK
 // ══════════════════════════════════════════════════════
 function tmplCaps(t){
@@ -821,7 +1317,8 @@ function showFb(ok,msg){
   document.getElementById('fb-txt').textContent=msg;
 }
 function kindName(k){
-  return {sel:'Выделение',corr:'Исправление',shift:'Shift (заглавная)',punct:'Пробел+запятая',caps:'Caps Lock'}[k]||k;
+  return {sel:'Выделение',corr:'Исправление',shift:'Shift (заглавная)',punct:'Пробел+запятая',
+          caps:'Caps Lock',click:'Клик мышью',rclick:'Правая кнопка'}[k]||k;
 }
 
 // ══════════════════════════════════════════════════════
