@@ -428,7 +428,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;color
 //  ДАННЫЕ — 30 ЗАДАНИЙ
 // ══════════════════════════════════════════════════════
 const ALL_TASKS = [
-  // SELECTION (12 шт) — target всегда строчными, сравнение без учёта регистра
+  // SELECTION (12 шт)
   {kind:'sel', sentence:'Мой класс учится хорошо',      target:'класс'},
   {kind:'sel', sentence:'Я люблю читать книги',          target:'книги'},
   {kind:'sel', sentence:'На диване спит кошка',          target:'кошка'},
@@ -463,17 +463,21 @@ const ALL_TASKS = [
   {kind:'caps', word:'ПРИРОДА'},
   {kind:'caps', word:'ЗЕМЛЯ'},
   {kind:'caps', word:'КАЗАХСТАН'},
-  // CLICK — одинарный щелчок (4 шт)
-  {kind:'click', clicks:1, icon:'folder',  label:'Папка «Документы»'},
-  {kind:'click', clicks:1, icon:'folder',  label:'Папка «Мои рисунки»'},
-  {kind:'click', clicks:1, icon:'file',    label:'Ярлык «Блокнот»'},
-  {kind:'click', clicks:1, icon:'file',    label:'Ярлык «Калькулятор»'},
-  // CLICK — двойной щелчок (4 шт)
-  {kind:'click', clicks:2, icon:'folder',  label:'Папка «Школа»'},
-  {kind:'click', clicks:2, icon:'folder',  label:'Папка «Фотографии»'},
-  {kind:'click', clicks:2, icon:'file',    label:'Ярлык «Paint»'},
-  {kind:'click', clicks:2, icon:'file',    label:'Ярлык «Текстовый редактор»'},
-  // RCLICK — правая кнопка + контекстное меню (9 шт)
+  // CLICK — одинарный щелчок (6 шт)
+  {kind:'click', clicks:1, icon:'folder', label:'Папка «Документы»'},
+  {kind:'click', clicks:1, icon:'folder', label:'Папка «Мои рисунки»'},
+  {kind:'click', clicks:1, icon:'file',   label:'Ярлык «Блокнот»'},
+  {kind:'click', clicks:1, icon:'file',   label:'Ярлык «Калькулятор»'},
+  {kind:'click', clicks:1, icon:'folder', label:'Папка «Музыка»'},
+  {kind:'click', clicks:1, icon:'file',   label:'Ярлык «Корзина»'},
+  // CLICK — двойной щелчок (6 шт)
+  {kind:'click', clicks:2, icon:'folder', label:'Папка «Школа»'},
+  {kind:'click', clicks:2, icon:'folder', label:'Папка «Фотографии»'},
+  {kind:'click', clicks:2, icon:'file',   label:'Ярлык «Paint»'},
+  {kind:'click', clicks:2, icon:'file',   label:'Ярлык «Текстовый редактор»'},
+  {kind:'click', clicks:2, icon:'folder', label:'Папка «Игры»'},
+  {kind:'click', clicks:2, icon:'file',   label:'Ярлык «Проводник»'},
+  // RCLICK — правая кнопка + контекстное меню (12 шт)
   {kind:'rclick', cmd:'Копировать', pic:{emoji:'🌅',label:'Закат солнца'}},
   {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'🐱',label:'Котёнок'}},
   {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🌳',label:'Дерево'}},
@@ -483,12 +487,16 @@ const ALL_TASKS = [
   {kind:'rclick', cmd:'Копировать', pic:{emoji:'🎨',label:'Палитра'}},
   {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'📚',label:'Книги'}},
   {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🦋',label:'Бабочка'}},
+  {kind:'rclick', cmd:'Копировать', pic:{emoji:'🌸',label:'Цветок'}},
+  {kind:'rclick', cmd:'Вырезать',   pic:{emoji:'🐶',label:'Собачка'}},
+  {kind:'rclick', cmd:'Удалить',    pic:{emoji:'🌈',label:'Радуга'}},
 ];
 
 // ══════════════════════════════════════════════════════
 //  СОСТОЯНИЕ
 // ══════════════════════════════════════════════════════
 let tasks=[], curIdx=0, score=0, taskResults=[], taskScored=false;
+let taskErrors=0;  // ошибки в текущем задании
 let cState={chars:[],pos:0};
 let _keyFn=null;
 let selDrag={active:false,startChar:-1,endChar:-1};
@@ -543,7 +551,16 @@ function refreshCapsOverlay(){
 //  СТАРТ
 // ══════════════════════════════════════════════════════
 function buildTaskList(){
-  return shuffle([...ALL_TASKS]).slice(0,30);
+  const byKind = k => shuffle(ALL_TASKS.filter(t=>t.kind===k));
+  // Mouse tasks: click(12) + rclick(12) = 24, others: sel(5)+corr(4)+shift(2)+punct(2)+caps(2)+sel_extra(1) = 16
+  const sel    = byKind('sel').slice(0,6);
+  const corr   = byKind('corr').slice(0,5);
+  const shift  = byKind('shift').slice(0,2);
+  const punct  = byKind('punct').slice(0,2);
+  const caps   = byKind('caps').slice(0,1);
+  const click  = byKind('click');          // all 12
+  const rclick = byKind('rclick');         // all 12
+  return shuffle([...sel,...corr,...shift,...punct,...caps,...click,...rclick]).slice(0,40);
 }
 function start(){
   tasks=buildTaskList(); curIdx=0; score=0; taskResults=[];
@@ -569,6 +586,7 @@ function renderTask(){
   if(curIdx>=tasks.length){showResults();return;}
   renderProgress();
   taskScored=false;
+  taskErrors=0;
   dropKey();
   selDrag={active:false,startChar:-1,endChar:-1};
 
@@ -937,8 +955,7 @@ function tmplClick(t){
     </div>
     <div class="click-msg" id="click-msg">${needed===1?'⬅️ Жди одного щелчка ЛЕВОЙ кнопкой…':'⬅️ Жди двух быстрых щелчков ЛЕВОЙ кнопкой…'}</div>
   </div>
-  <div class="divider"></div>
-  <button class="check-btn" id="check-click-btn" onclick="checkClick()" style="display:none">✅ Проверить</button>`;
+  <div class="divider"></div>`;
 }
 
 function handleIconMousedown(e){
@@ -980,7 +997,6 @@ function registerLeftClick(){
   if(dot) dot.classList.add('done');
   if(clickState.done===clickState.needed){
     showClickMsg(clickState.needed===1?'🎉 Отлично! Ты щёлкнул ЛЕВОЙ кнопкой один раз!':'🎉 Двойной щелчок ЛЕВОЙ кнопкой выполнен!','#14532d');
-    document.getElementById('check-click-btn').style.display='inline-block';
     setTimeout(()=>checkClick(),400);
   } else {
     showClickMsg(`Щелчок ${clickState.done} из ${clickState.needed}… ещё раз ЛЕВОЙ кнопкой!`,'#1e40af');
@@ -996,7 +1012,6 @@ function checkClick(){
     giveErr(`Нужно щёлкнуть ЛЕВОЙ кнопкой ${clickState.needed===1?'один раз':'два раза быстро'}. Попробуй ещё!`);
     clickState.done=0;
     document.querySelectorAll('.click-dot').forEach(d=>d.classList.remove('done'));
-    document.getElementById('check-click-btn').style.display='none';
     showClickMsg(clickState.needed===1?'⬅️ Жди одного щелчка ЛЕВОЙ кнопкой…':'⬅️ Жди двух быстрых щелчков ЛЕВОЙ кнопкой…','#1e293b');
   }
 }
@@ -1074,7 +1089,7 @@ function tmplRClick(t){
       <div class="rclick-empty" id="rclick-empty" style="display:none"
            oncontextmenu="rcOnCtx(event,'empty')"
            onmousedown="rcOnMD(event,'empty')">
-        <div class="rclick-empty-hint">Нажми сюда правой кнопкой</div>
+        <div class="rclick-empty-hint">🖱️ Нажми сюда<br><b>правой кнопкой</b><br>и выбери<br>«<b>Вставить</b>»</div>
       </div>
 
       <!-- Контекстное меню -->
@@ -1303,13 +1318,18 @@ const BAD_EMO=['💪','😊','🤔','🌈','😅','🙃'];
 function giveOk(msg){
   if(taskScored)return;
   taskScored=true;
-  taskResults.push({ok:true,label:kindName(tasks[curIdx].kind)});
-  renderProgress();  // обновить счётчик правильных ответов в прогресс-баре
+  // Сохраняем: правильно + сколько было ошибок
+  taskResults.push({ok:true, errors:taskErrors, label:kindName(tasks[curIdx].kind)});
+  renderProgress();
   showFb(true,msg);
   document.getElementById('next-btn').classList.add('show');
   document.getElementById('main-card').className='card ok';
 }
-function giveErr(msg){showFb(false,msg);document.getElementById('main-card').className='card bad';}
+function giveErr(msg){
+  taskErrors++;   // считаем ошибку
+  showFb(false,msg);
+  document.getElementById('main-card').className='card bad';
+}
 function showFb(ok,msg){
   const fb=document.getElementById('feedback');
   fb.className=`sec-feedback show ${ok?'ok':'bad'}`;
@@ -1325,7 +1345,7 @@ function kindName(k){
 //  НАВИГАЦИЯ
 // ══════════════════════════════════════════════════════
 function nextTask(){
-  if(!taskScored) taskResults.push({ok:false,label:kindName(tasks[curIdx].kind)});
+  if(!taskScored) taskResults.push({ok:false, errors:taskErrors+1, label:kindName(tasks[curIdx].kind)});
   curIdx++; dropKey(); renderTask();
 }
 
@@ -1339,11 +1359,21 @@ function showResults(){
   document.getElementById('prog-wrap').style.display='none';
   document.getElementById('caps-banner').classList.remove('show');
 
-  // Считаем честно: сколько правильных из общего числа заданий
   const total = tasks.length;
   const correct = taskResults.filter(r=>r.ok).length;
-  // Масштабируем в 10 баллов, округляем до целого
-  const s = Math.round(correct / total * 10);
+  const skipped = taskResults.filter(r=>!r.ok).length;
+
+  // Базовая оценка: правильных / всего → 0–10
+  let raw = correct / total * 10;
+
+  // Штраф за ошибки в правильно выполненных: каждая ошибка = −0.1 балла (незначительно)
+  const totalErrors = taskResults.reduce((s,r)=>s+(r.errors||0),0);
+  raw -= totalErrors * 0.1;
+
+  // Если все задания выполнены правильно (хотя бы) — гарантия минимум 7
+  if(correct === total) raw = Math.max(raw, 7);
+
+  const s = Math.min(10, Math.max(0, Math.round(raw)));
 
   document.getElementById('res-score').textContent=s;
   let emo,title,sub;
@@ -1354,18 +1384,18 @@ function showResults(){
   document.getElementById('res-emoji').textContent=emo;
   document.getElementById('res-title').textContent=title;
   document.getElementById('res-sub').textContent=sub;
-  const ok=taskResults.filter(r=>r.ok).length;
-  const tot=taskResults.length;
   document.getElementById('res-list').innerHTML=
     `<div class="result-item" style="background:#dbeafe;font-weight:800;">
       <span style="font-size:1.4rem">📊</span>
-      <span>Правильных ответов: ${ok} из ${tot}</span>
+      <span>Правильных: ${correct} из ${total} | Ошибок: ${totalErrors}</span>
     </div>`+
     taskResults.map(r=>`
       <div class="result-item">
         <span style="font-size:1.3rem">${r.ok?'✅':'❌'}</span>
         <span>${r.label}</span>
-        <span style="margin-left:auto;font-size:0.9rem;color:var(--muted)">${r.ok?'+балл':'—'}</span>
+        <span style="margin-left:auto;font-size:0.9rem;color:var(--muted)">
+          ${r.ok ? (r.errors>0?`с ${r.errors} ош.`:'отлично') : 'пропущено'}
+        </span>
       </div>`).join('');
 }
 
