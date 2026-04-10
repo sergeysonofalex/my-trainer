@@ -386,6 +386,71 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;color
 .ctx-item:last-child{border-bottom:none;}
 .ctx-item:hover{background:#eff6ff;color:var(--primary);}
 .ctx-item.ctx-highlight{background:#fef9c3;}
+
+/* ══ АДАПТИВНОСТЬ — ноутбуки (1366×768, 1280×800, 125% масштаб) ══ */
+/* Планшеты и небольшие ноутбуки */
+@media (max-width:900px){
+  body{font-size:16px;padding:14px 10px 40px;}
+  .hdr h1{font-size:1.7rem;}
+  .card{padding:18px 16px 16px;}
+  .task-badge{font-size:1.3rem;padding:11px 18px;}
+  .task-badge span{font-size:1.6rem;}
+  .instruction{font-size:1.3rem;}
+  .sentence-area{font-size:1.7rem;line-height:2;}
+  .editable-word{font-size:2rem;padding:10px 16px;letter-spacing:3px;}
+  .typing-input{font-size:1.6rem;padding:11px 16px;}
+  .sec-hint,.sec-warn,.sec-task{padding:12px 14px;font-size:1rem;}
+  .prog-wrap{padding:8px 14px;gap:10px;}
+  .prog-lbl{font-size:0.9rem;}
+  .score-badge{font-size:0.9rem;padding:3px 10px;}
+  .check-btn,.next-btn,.restart-btn{padding:11px 26px;font-size:1.1rem;}
+  .desk-icon-img{font-size:4.5rem;}
+  .rclick-emoji{font-size:4.5rem;}
+  .score-circle{width:110px;height:110px;}
+  .score-circle .big{font-size:2.6rem;}
+}
+
+/* Маленькие экраны (Lenovo V14: 1366×768 при 125% = ~1093px логических) */
+@media (max-width:800px){
+  body{font-size:15px;padding:10px 8px 36px;}
+  .hdr h1{font-size:1.5rem;}
+  .hdr p{font-size:0.95rem;}
+  .card{padding:14px 12px 14px;border-radius:14px;max-width:100%;}
+  .task-badge{font-size:1.2rem;padding:10px 14px;border-radius:12px;}
+  .task-badge span{font-size:1.4rem;}
+  .instruction{font-size:1.2rem;}
+  .sentence-area{font-size:1.55rem;padding:12px 14px;line-height:1.9;}
+  .editable-word{font-size:1.8rem;letter-spacing:2px;min-width:180px;}
+  .typing-input{font-size:1.4rem;padding:10px 14px;}
+  .key-btn{font-size:0.95rem;padding:8px 14px;}
+  .prog-wrap{border-radius:14px;padding:8px 12px;}
+  .check-btn,.next-btn,.restart-btn{padding:10px 22px;font-size:1rem;}
+  .sec-feedback{font-size:1rem;padding:12px 14px;}
+  .sec-feedback .emo{font-size:1.8rem;}
+  .desk-icon-img{font-size:4rem;}
+  .rclick-emoji{font-size:4rem;}
+  .click-dot{width:18px;height:18px;}
+  .corr-correct strong{font-size:1.3rem;}
+  .mouse-body{width:44px;height:68px;}
+  .mouse-top{height:32px;}
+}
+
+/* Телефоны */
+@media (max-width:520px){
+  body{padding:8px 6px 30px;font-size:14px;}
+  .hdr h1{font-size:1.3rem;}
+  .task-badge{font-size:1.05rem;padding:9px 12px;}
+  .task-badge span{font-size:1.2rem;}
+  .instruction{font-size:1.1rem;}
+  .sentence-area{font-size:1.35rem;padding:10px 10px;line-height:1.8;}
+  .editable-word{font-size:1.5rem;padding:8px 12px;}
+  .typing-input{font-size:1.2rem;}
+  .check-btn,.next-btn{padding:9px 18px;font-size:0.95rem;}
+  .rclick-emoji,.desk-icon-img{font-size:3.5rem;}
+  .res-title{font-size:1.7rem;}
+  .score-circle{width:90px;height:90px;}
+  .score-circle .big{font-size:2.2rem;}
+}
 </style>
 </head>
 <body>
@@ -726,7 +791,9 @@ function checkSel(target){
 //  ЗАДАНИЕ: ИСПРАВЛЕНИЕ ОШИБКИ
 // ══════════════════════════════════════════════════════
 function tmplCorr(t){
-  cState={chars:t.wrong.split(''),pos:t.wrong.length};
+  // Явно сбрасываем cState до рендера шаблона
+  cState={chars:[...t.wrong], pos:t.wrong.length};
+  const initialHtml = corrRender();
   return `
   <div class="sec-hint">
     <b>📌 Памятка:</b><br>
@@ -742,7 +809,7 @@ function tmplCorr(t){
          onclick="ewClick(event)"
          onfocus="document.getElementById('eword').classList.add('focused')"
          onblur="document.getElementById('eword').classList.remove('focused')"
-    >${corrRender()}</div>
+    >${initialHtml}</div>
     <div class="key-buttons">
       <button class="key-btn bs" id="btn-bs" onclick="corrBS()">⬅ Backspace (Бэкспейс)</button>
       <button class="key-btn dl" id="btn-dl" onclick="corrDel()">Delete (Делит) ➡</button>
