@@ -1710,10 +1710,11 @@ function wSetStep(n){
     if(!el) continue;
     el.className='word-step'+(i<n?' done':i===n?' active':'');
   }
-  // Подсветка нужного элемента на каждом шаге
   // Сбрасываем все highlight-классы
-  ['wtab-insert'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('need-click-tab');});
-  ['ribbon-pic-btn'].forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('need-click');}});
+  const tab=document.getElementById('wtab-insert');
+  if(tab) tab.classList.remove('need-click-tab');
+  const pb=document.getElementById('ribbon-pic-btn');
+  if(pb) pb.classList.remove('need-click');
   document.querySelectorAll('.rdm-item').forEach(e=>e.classList.remove('need-click'));
   document.querySelectorAll('.dialog-tree-item').forEach(e=>e.classList.remove('need-click'));
   document.querySelectorAll('.dialog-folder').forEach(e=>e.classList.remove('need-click'));
@@ -1721,168 +1722,222 @@ function wSetStep(n){
   const btnIns=document.getElementById('btn-insert-pic');
   if(btnIns) btnIns.classList.remove('need-click');
 
+  // Подсвечиваем следующий нужный элемент
   if(n===0){
-    // Подсветить вкладку Вставка
-    const tab=document.getElementById('wtab-insert');
     if(tab) tab.classList.add('need-click-tab');
   } else if(n===1){
-    // Подсветить кнопку Рисунки
-    const pb=document.getElementById('ribbon-pic-btn');
     if(pb) pb.classList.add('need-click');
   } else if(n===2){
-    // Подсветить пункт "Это устройство"
     const menu=document.getElementById('pic-menu');
-    if(menu){
-      const items=menu.querySelectorAll('.rdm-item');
-      if(items[0]) items[0].classList.add('need-click');
-    }
+    if(menu){ const items=menu.querySelectorAll('.rdm-item'); if(items[0]) items[0].classList.add('need-click'); }
   } else if(n===3){
-    // Подсветить "Рабочий стол" в сайдбаре
     const desk=document.getElementById('sidebar-desktop');
     if(desk) desk.classList.add('need-click');
   } else if(n===4){
-    // Подсветить папку Рисунки
-    const folder=document.querySelector('.dialog-folder');
+    const folder=document.getElementById('folder-risunki');
     if(folder) folder.classList.add('need-click');
+  } else if(n===5){
+    ['df-butterfly','df-bee'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.classList.add('need-click');
+    });
   } else if(n===6){
-    // Подсветить кнопку Вставить
-    const btn=document.getElementById('btn-insert-pic');
-    if(btn) btn.classList.add('need-click');
+    if(btnIns) btnIns.classList.add('need-click');
   }
 }
+
 function wShowMsg(msg,color){
   const el=document.getElementById('word-msg');
-  if(el){el.innerHTML=msg;el.style.color=color||'var(--text)';}
+  if(el){el.innerHTML=msg; el.style.color=color||'var(--text)';}
+}
+
+// Мягкая подсказка — НЕ вызывает giveErr, не меняет состояние карточки
+function wHint(msg){
+  wShowMsg('⚠️ '+msg,'#92400e');
+  // Просто мигаем карточку оранжевым на секунду
+  const card=document.getElementById('main-card');
+  if(card){
+    const prev=card.className;
+    card.className='card bad';
+    setTimeout(()=>{ if(card) card.className=prev; },600);
+  }
 }
 
 function wClickTab(){
-  if(wSt.step>0) return;
-  // Переключаем ленту: скрываем Главная, показываем Вставка
+  if(wSt.step>0){
+    wHint('Вкладка Вставка уже открыта — нажми кнопку Рисунки');
+    return;
+  }
   const ribHome=document.getElementById('ribbon-home');
   const ribIns=document.getElementById('ribbon-insert');
   if(ribHome) ribHome.style.display='none';
   if(ribIns)  ribIns.style.display='flex';
-  // Переключаем вкладки
   const tabHome=document.getElementById('wtab-home');
   const tabIns=document.getElementById('wtab-insert');
   if(tabHome) tabHome.classList.remove('active');
-  if(tabIns){tabIns.classList.remove('need-click-tab');tabIns.classList.add('active');}
+  if(tabIns){ tabIns.classList.remove('need-click-tab'); tabIns.classList.add('active'); }
   wSetStep(1);
   wShowMsg('Молодец! Теперь нажми кнопку Рисунки 🖼️','#1e40af');
 }
+
 function wWrongTab(name){
-  if(wSt.step===0) giveErr(`Это вкладка ${name}. Тебе нужна вкладка Вставка!`);
+  if(wSt.step===0) wHint(`Это вкладка ${name}. Нажми вкладку Вставка!`);
+  else if(wSt.step===1) wHint('Вкладка уже открыта. Нажми кнопку Рисунки на ленте');
+  else wHint(`Нажми вкладку Вставка и выполни шаги задания`);
 }
+
 function wClickPicBtn(){
-  if(wSt.step!==1){wWrongStep('Сначала нажми вкладку Вставка');return;}
+  if(wSt.step===0){ wHint('Сначала нажми вкладку Вставка'); return; }
+  if(wSt.step>2){ wHint('Рисунки уже нажаты — продолжай следующий шаг'); return; }
   wSetStep(2);
   const menu=document.getElementById('pic-menu');
   if(menu) menu.classList.add('open');
   wShowMsg('Отлично! Выбери пункт Это устройство...','#1e40af');
-  // Close menu on outside click
   setTimeout(()=>document.addEventListener('mousedown',wCloseMenuOutside,{once:true}),80);
 }
+
 function wCloseMenuOutside(e){
   const menu=document.getElementById('pic-menu');
-  if(menu&&!menu.contains(e.target)) menu.classList.remove('open');
+  if(menu&&!menu.contains(e.target)){
+    menu.classList.remove('open');
+    // Если меню закрыли не выбрав — возвращаем на шаг 1 чтобы можно было снова нажать Рисунки
+    if(wSt.step===2){
+      wSetStep(1);
+      wShowMsg('Меню закрыто. Нажми кнопку Рисунки снова 🖼️','#92400e');
+    }
+  }
 }
+
 function wClickDevice(){
-  if(wSt.step!==2){wWrongStep('Сначала нажми кнопку Рисунки');return;}
-  document.getElementById('pic-menu').classList.remove('open');
+  if(wSt.step<2){ wHint('Сначала нажми кнопку Рисунки'); return; }
+  const menu=document.getElementById('pic-menu');
+  if(menu) menu.classList.remove('open');
   wSetStep(3);
-  document.getElementById('word-dialog').classList.add('open');
+  const dlg=document.getElementById('word-dialog');
+  if(dlg) dlg.classList.add('open');
   wShowMsg('Диалог открыт! Выбери Рабочий стол слева','#1e40af');
 }
+
 function wClickDesktop(){
-  if(wSt.step!==3){wWrongStep('Нажми сначала Это устройство');return;}
+  // Доступно на шаге 3 и выше (если вдруг вернулись)
+  if(wSt.step<3){ wHint('Сначала открой диалог через Рисунки → Это устройство'); return; }
   wSt.dialogView='desktop';
+  // Обновляем сайдбар
   document.querySelectorAll('.dialog-tree-item').forEach(el=>el.classList.remove('selected','need-click'));
   document.getElementById('sidebar-desktop').classList.add('selected');
+  // Показываем содержимое рабочего стола
   const fi=document.getElementById('dialog-files-images');
   if(fi) fi.style.display='none';
-  document.getElementById('dialog-files-desktop').style.display='flex';
-  document.getElementById('dialog-files-risunki').style.display='none';
-  wSetStep(4);
+  const fd=document.getElementById('dialog-files-desktop');
+  if(fd) fd.style.display='flex';
+  const fr=document.getElementById('dialog-files-risunki');
+  if(fr) fr.style.display='none';
+  // Сбрасываем выбор файла если был
+  wSt.selectedFile='';
+  const inp=document.getElementById('dialog-filename');
+  if(inp) inp.value='';
+  const btn=document.getElementById('btn-insert-pic');
+  if(btn) btn.classList.add('disabled');
+  if(wSt.step<=4) wSetStep(4);
   wShowMsg('Рабочий стол выбран! Открой папку Рисунки двойным щелчком 👆👆','#1e40af');
 }
+
 function wSelectFolder(){
-  if(wSt.step>=4) wShowMsg('Нажми на папку Рисунки ДВА РАЗА быстро (двойной щелчок) 👆👆','#92400e');
+  // Одиночный клик по папке — подсказка
+  wShowMsg('Нажми на папку Рисунки ДВА РАЗА быстро (двойной щелчок) 👆👆','#92400e');
 }
+
 function wOpenRisunki(){
-  if(wSt.step!==4){
-    if(wSt.step<4) wWrongStep('Сначала выбери Рабочий стол слева');
-    return;
-  }
-  document.getElementById('dialog-files-desktop').style.display='none';
-  document.getElementById('dialog-files-risunki').style.display='flex';
+  if(wSt.step<4){ wHint('Сначала выбери Рабочий стол слева'); return; }
+  const fd=document.getElementById('dialog-files-desktop');
+  if(fd) fd.style.display='none';
+  const fr=document.getElementById('dialog-files-risunki');
+  if(fr) fr.style.display='flex';
   wSt.dialogView='risunki';
-  wSetStep(5); // highlights both image files
-  // Highlight both files (since we don't know which is needed yet, highlight both)
+  // Сбрасываем выбор файла
   ['df-butterfly','df-bee'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) el.classList.add('need-click');
+    if(el) el.classList.remove('selected-file','need-click');
   });
-  wShowMsg('Папка открыта! Выбери картинку одним щелчком','#1e40af');
+  wSt.selectedFile='';
+  const inp=document.getElementById('dialog-filename');
+  if(inp) inp.value='';
+  const btn=document.getElementById('btn-insert-pic');
+  if(btn) btn.classList.add('disabled');
+  if(wSt.step<=5) wSetStep(5);
+  wShowMsg('Папка открыта! Выбери нужную картинку одним щелчком 👆','#1e40af');
 }
+
 function wSelectFile(name, target){
-  if(wSt.step!==5){
-    if(wSt.step<5) wWrongStep('Сначала открой папку Рисунки');
-    return;
-  }
+  if(wSt.step<5){ wHint('Сначала открой папку Рисунки двойным щелчком'); return; }
+  // Снимаем выделение со всех файлов
   ['df-butterfly','df-bee'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){el.classList.remove('selected-file','need-click');}
+    if(el) el.classList.remove('selected-file','need-click');
   });
   const sel=document.getElementById(name==='Бабочка'?'df-butterfly':'df-bee');
   if(sel) sel.classList.add('selected-file');
   wSt.selectedFile=name;
-  document.getElementById('dialog-filename').value=name;
+  const inp=document.getElementById('dialog-filename');
+  if(inp) inp.value=name;
   const btn=document.getElementById('btn-insert-pic');
-  if(btn){btn.classList.remove('disabled');btn.classList.add('need-click');}
+  if(btn){ btn.classList.remove('disabled'); btn.classList.add('need-click'); }
   wSetStep(6);
   wShowMsg(`Выбрана: ${name}. Теперь нажми кнопку Вставить ↓`,'#1e40af');
 }
+
 function wInsertPic(target, emoji){
-  if(wSt.step!==6){wWrongStep('Сначала выбери картинку');return;}
-  if(!wSt.selectedFile){wWrongStep('Сначала выбери картинку');return;}
+  if(wSt.step<5){ wHint('Сначала выбери картинку из папки'); return; }
+  if(!wSt.selectedFile){ wHint('Выбери картинку — нажми на неё один раз'); return; }
   if(wSt.selectedFile!==target){
-    giveErr(`Нужно выбрать картинку ${target}, а выбрана ${wSt.selectedFile}. Попробуй снова!`);
-    // Reset selection
+    // Мягкая ошибка — не блокирует, можно выбрать снова
+    wShowMsg(`❌ Нужна картинка ${target}, а выбрана ${wSt.selectedFile}. Выбери правильную!`,'#7c2d12');
+    taskErrors++;
+    // Сброс выбора — можно выбрать снова
+    ['df-butterfly','df-bee'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.classList.remove('selected-file');
+    });
     wSt.selectedFile='';
-    document.getElementById('dialog-filename').value='';
-    ['df-butterfly','df-bee'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('selected-file');});
-    document.getElementById('btn-insert-pic').classList.add('disabled');
+    const inp=document.getElementById('dialog-filename');
+    if(inp) inp.value='';
+    const btn=document.getElementById('btn-insert-pic');
+    if(btn) btn.classList.add('disabled');
     wSetStep(5);
     return;
   }
   // Успех!
   wCloseDialog();
   const content=document.getElementById('word-content');
-  if(content){
-    content.innerHTML=`<div class="word-inserted-img">${emoji}</div>`;
-  }
-  document.getElementById('word-caption').textContent=`Рисунок: ${target}`;
+  if(content) content.innerHTML=`<div class="word-inserted-img">${emoji}</div>`;
+  const cap=document.getElementById('word-caption');
+  if(cap) cap.textContent=`Рисунок: ${target}`;
   wShowMsg(`🎉 Рисунок ${target} успешно вставлен в документ!`,'#14532d');
   setTimeout(()=>giveOk(`Отлично! Ты вставил рисунок ${target} в Word! 💻🖼️`),600);
 }
+
 function wCloseDialog(){
   const d=document.getElementById('word-dialog');
   if(d) d.classList.remove('open');
 }
+
+// Мягкие ошибки в диалоге — только подсказка, не блокируют
 function wWrongMenu(){
-  giveErr('Это не тот пункт. Нажми Это устройство...');
+  wShowMsg('⚠️ Это не тот пункт. Нажми Это устройство...','#92400e');
+  taskErrors++;
 }
 function wWrongRibbon(){
-  giveErr('Это другая кнопка. Нажми кнопку Рисунки');
+  wShowMsg('⚠️ Это другая кнопка. Нажми кнопку Рисунки 🖼️','#92400e');
+  taskErrors++;
 }
 function wWrongSidebar(name){
-  giveErr(`Это папка ${name}. Тебе нужно выбрать Рабочий стол`);
+  // Просто показываем подсказку — НЕ блокируем и НЕ вызываем giveErr
+  wShowMsg(`⚠️ Это папка ${name}. Нажми Рабочий стол`,'#92400e');
+  taskErrors++;
 }
-function wWrongStep(msg){
-  giveErr(msg);
-}
-function wClickPages(){giveErr('Это Страницы. Тебе нужна кнопка Рисунки');}
-function wClickTables(){giveErr('Это Таблица. Тебе нужна кнопка Рисунки');}
+function wWrongStep(msg){ wHint(msg); }
+function wClickPages(){ wShowMsg('⚠️ Это Страницы. Нажми кнопку Рисунки 🖼️','#92400e'); taskErrors++; }
+function wClickTables(){ wShowMsg('⚠️ Это Таблица. Нажми кнопку Рисунки 🖼️','#92400e'); taskErrors++; }
+
 
 // ═══════════════════════════════════════════════════
 //  FEEDBACK + SCORE
