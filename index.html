@@ -1698,6 +1698,15 @@ function tmplWord(t){
 
     </div><!-- end word-sim -->
     <div class="click-msg" id="word-msg" style="margin-top:10px">👆 Нажми на вкладку <b>ВСТАВКА</b> в верхнем меню</div>
+    <div style="margin-top:10px;text-align:center">
+      <button onclick="wResetTask()" style="
+        background:#f1f5f9;border:2px solid #cbd5e1;border-radius:50px;
+        padding:7px 20px;font-family:'Nunito',sans-serif;font-size:0.9rem;
+        font-weight:700;color:#64748b;cursor:pointer;transition:all .15s;
+      " onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+        🔄 Начать задание заново <span style="font-size:0.78rem;opacity:.7">(−1 балл)</span>
+      </button>
+    </div>
   </div>
   <div class="divider"></div>`;
 }
@@ -1785,9 +1794,78 @@ function wWrongTab(name){
   else wHint(`Нажми вкладку Вставка и выполни шаги задания`);
 }
 
+function wResetTask(){
+  // Считаем сброс как ошибку
+  taskErrors++;
+  wSt={step:0, selectedFile:'', dialogView:'desktop'};
+  // Закрываем диалог и меню
+  const dlg=document.getElementById('word-dialog');
+  if(dlg) dlg.classList.remove('open');
+  const menu=document.getElementById('pic-menu');
+  if(menu) menu.classList.remove('open');
+  // Восстанавливаем ленту Главная
+  const ribHome=document.getElementById('ribbon-home');
+  const ribIns=document.getElementById('ribbon-insert');
+  if(ribHome) ribHome.style.display='flex';
+  if(ribIns)  ribIns.style.display='none';
+  // Восстанавливаем вкладки
+  const tabHome=document.getElementById('wtab-home');
+  const tabIns=document.getElementById('wtab-insert');
+  if(tabHome) tabHome.classList.add('active');
+  if(tabIns){ tabIns.classList.remove('active'); tabIns.classList.add('need-click-tab'); }
+  // Восстанавливаем сайдбар диалога
+  document.querySelectorAll('.dialog-tree-item').forEach(el=>el.classList.remove('selected','need-click'));
+  const imgSide=document.getElementById('sidebar-images');
+  if(imgSide) imgSide.classList.add('selected');
+  // Восстанавливаем содержимое диалога
+  const fi=document.getElementById('dialog-files-images');
+  if(fi) fi.style.display='flex';
+  const fd=document.getElementById('dialog-files-desktop');
+  if(fd) fd.style.display='none';
+  const fr=document.getElementById('dialog-files-risunki');
+  if(fr) fr.style.display='none';
+  // Сбрасываем файл и кнопку
+  const inp=document.getElementById('dialog-filename');
+  if(inp) inp.value='';
+  const btn=document.getElementById('btn-insert-pic');
+  if(btn){ btn.classList.add('disabled'); btn.classList.remove('need-click'); }
+  ['df-butterfly','df-bee'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('selected-file','need-click');
+  });
+  // Восстанавливаем документ
+  const content=document.getElementById('word-content');
+  if(content) content.innerHTML='<span class="word-cursor-line"></span>';
+  const cap=document.getElementById('word-caption');
+  if(cap) cap.textContent='';
+  // Сбрасываем шаги
+  wSetStep(0);
+  wShowMsg('🔄 Задание сброшено. Начни снова — нажми вкладку <b>ВСТАВКА</b>','#92400e');
+}
+
 function wClickPicBtn(){
   if(wSt.step===0){ wHint('Сначала нажми вкладку Вставка'); return; }
-  if(wSt.step>2){ wHint('Рисунки уже нажаты — продолжай следующий шаг'); return; }
+  if(wSt.step>=3){
+    // Диалог уже должен быть открыт — подсказываем
+    const dlg=document.getElementById('word-dialog');
+    if(dlg && !dlg.classList.contains('open')){
+      // Диалог закрыт — переоткрываем
+      dlg.classList.add('open');
+      wShowMsg('Диалог снова открыт. Продолжай!','#1e40af');
+    } else {
+      wHint('Рисунки уже нажаты — продолжай следующий шаг');
+    }
+    return;
+  }
+  if(wSt.step===2){
+    // Меню уже открыто или закрыто — переоткрываем
+    const menu=document.getElementById('pic-menu');
+    if(menu) menu.classList.add('open');
+    wShowMsg('Выбери пункт Это устройство...','#1e40af');
+    setTimeout(()=>document.addEventListener('mousedown',wCloseMenuOutside,{once:true}),80);
+    return;
+  }
+  // step===1 — нормальное нажатие
   wSetStep(2);
   const menu=document.getElementById('pic-menu');
   if(menu) menu.classList.add('open');
@@ -1799,7 +1877,6 @@ function wCloseMenuOutside(e){
   const menu=document.getElementById('pic-menu');
   if(menu&&!menu.contains(e.target)){
     menu.classList.remove('open');
-    // Если меню закрыли не выбрав — возвращаем на шаг 1 чтобы можно было снова нажать Рисунки
     if(wSt.step===2){
       wSetStep(1);
       wShowMsg('Меню закрыто. Нажми кнопку Рисунки снова 🖼️','#92400e');
@@ -1918,6 +1995,9 @@ function wInsertPic(target, emoji){
 function wCloseDialog(){
   const d=document.getElementById('word-dialog');
   if(d) d.classList.remove('open');
+  if(wSt.step>=3 && wSt.step<6 && !taskScored){
+    wShowMsg('Диалог закрыт. Нажми Рисунки → Это устройство снова, или нажми <b>Начать заново</b>.','#92400e');
+  }
 }
 
 // Мягкие ошибки в диалоге — только подсказка, не блокируют
@@ -1991,18 +2071,23 @@ function showMidResults(){
   const total=lvResults.length;
   const ok=lvResults.filter(r=>r.ok).length;
   const errs=lvResults.reduce((s,r)=>s+(r.errors||0),0);
-  const pct=Math.round(ok/total*100);
 
-  // Группировка по темам
+  // Качество: базово ok/total, штраф 3% за каждую лишнюю попытку, минимум 0
+  const rawPct = total ? (ok/total*100) - (errs*3) : 0;
+  const pct = Math.min(100, Math.max(0, Math.round(rawPct)));
+
+  // Группировка по темам (с учётом ошибок)
   const topics={};
   lvResults.forEach(r=>{
-    if(!topics[r.kind]) topics[r.kind]={ok:0,total:0,label:r.label};
+    if(!topics[r.kind]) topics[r.kind]={ok:0,total:0,errs:0,label:r.label};
     topics[r.kind].total++;
+    topics[r.kind].errs+=(r.errors||0);
     if(r.ok) topics[r.kind].ok++;
   });
 
   const topicRows=Object.values(topics).map(tp=>{
-    const p=Math.round(tp.ok/tp.total*100);
+    const rawP = tp.total ? (tp.ok/tp.total*100) - (tp.errs*3) : 0;
+    const p = Math.min(100, Math.max(0, Math.round(rawP)));
     const cls=p>=80?'ok':p>=50?'mid':'bad';
     return `<div class="topic-row">
       <div class="t-name">${tp.label}</div>
@@ -2054,26 +2139,39 @@ function showFinalResults(){
     const ok=res.filter(r=>r.ok).length;
     const all=res.length;
     const err=res.reduce((s,r)=>s+(r.errors||0),0);
-    lvScores[lv]={ok,all,err,pct:all?Math.round(ok/all*100):0};
+    // Качество уровня с учётом ошибок: −3% за каждую лишнюю попытку
+    const rawPct = all ? (ok/all*100) - (err*3) : 0;
+    const pct = Math.min(100, Math.max(0, Math.round(rawPct)));
+    lvScores[lv]={ok,all,err,pct};
     totalOk+=ok; totalAll+=all; totalErr+=err;
   });
 
-  // Итоговый балл: базовый от % правильных, штраф за ошибки, min 7 если все пройдены
-  let raw=totalAll?totalOk/totalAll*10:0;
-  raw-=totalErr*0.08;
-  const allDone=[1,2,3].every(lv=>(allLvResults[lv]||[]).length>0);
-  if(allDone&&totalOk===totalAll) raw=Math.max(raw,7);
+  // Итоговый балл на основе среднего качества по уровням (с учётом ошибок)
+  const completedLvs=[1,2,3].filter(lv=>(allLvResults[lv]||[]).length>0);
+  let raw=0;
+  if(completedLvs.length>0){
+    const avgPct=completedLvs.reduce((s,lv)=>s+lvScores[lv].pct,0)/completedLvs.length;
+    raw=avgPct/10;
+  }
+  const allDone=completedLvs.length===3;
+  // Если все уровни пройдены без единой ошибки — гарантия 10
+  if(allDone&&totalErr===0&&totalOk===totalAll) raw=10;
+  // Если все уровни пройдены хотя бы правильно — минимум 7
+  else if(allDone&&totalOk===totalAll) raw=Math.max(raw,7);
   const finalScore=Math.min(10,Math.max(0,Math.round(raw)));
 
-  // Группировка по темам (все уровни)
+  // Группировка по темам (все уровни, с учётом ошибок)
   const allRes=Object.values(allLvResults).flat();
   const topics={};
   allRes.forEach(r=>{
-    if(!topics[r.kind])topics[r.kind]={ok:0,total:0,label:r.label};
-    topics[r.kind].total++;if(r.ok)topics[r.kind].ok++;
+    if(!topics[r.kind])topics[r.kind]={ok:0,total:0,errs:0,label:r.label};
+    topics[r.kind].total++;
+    topics[r.kind].errs+=(r.errors||0);
+    if(r.ok)topics[r.kind].ok++;
   });
   const topicRows=Object.values(topics).map(tp=>{
-    const p=Math.round(tp.ok/tp.total*100);
+    const rawP=tp.total?(tp.ok/tp.total*100)-(tp.errs*3):0;
+    const p=Math.min(100,Math.max(0,Math.round(rawP)));
     const cls=p>=80?'ok':p>=50?'mid':'bad';
     return `<div class="topic-row">
       <div class="t-name">${tp.label}</div>
